@@ -1,0 +1,16 @@
+{
+    [
+      "cardName",
+      "textBox",
+      "coinCost",
+      "scoringCrowns",
+      "commandInstructions",
+      "replaceInstructions",
+      "numDraw",
+      "numGain",
+      "numCrowns",
+      "numMisc",
+      "isDirector"
+    ]
+  ]
+}

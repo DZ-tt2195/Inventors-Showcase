@@ -1,0 +1,55 @@
+{
+    [
+      "cardName",
+      "textBox",
+      "coinCost",
+      "scoringCrowns",
+      "commandInstructions",
+      "replaceInstructions",
+      "numDraw",
+      "numGain",
+      "numCrowns",
+      "numMisc",
+      "isDirector"
+    ],
+    [
+      "Explore",
+      "Draw 2 [Card].",
+      "",
+      "",
+      "",
+      "",
+      "2",
+      "",
+      "",
+      "",
+      "FALSE"
+    ],
+    [
+      "Collect",
+      "Gain 5 [Coin].",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "4",
+      "",
+      "",
+      "FALSE"
+    ],
+    [
+      "Recruit",
+      "Replace 1 [Card].",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "FALSE"
+    ]
+  ]
+}
