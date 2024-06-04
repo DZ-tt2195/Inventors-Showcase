@@ -22,6 +22,7 @@ public class CardData
     public int numCrowns;
     public int numMisc;
     public bool isDirector;
+    public string artCredit;
 }
 
 public class DownloadSheets : MonoBehaviour
@@ -138,7 +139,9 @@ public class DownloadSheets : MonoBehaviour
             nextData.numGain = StringToInt(data[i][cardSheetsColumns[nameof(CardData.numGain)]]);
             nextData.numCrowns = StringToInt(data[i][cardSheetsColumns[nameof(CardData.numCrowns)]]);
             nextData.numMisc = StringToInt(data[i][cardSheetsColumns[nameof(CardData.numMisc)]]);
+
             nextData.isDirector = data[i][cardSheetsColumns[nameof(CardData.numMisc)]] == "TRUE";
+            nextData.artCredit = data[i][cardSheetsColumns[nameof(CardData.artCredit)]];
         }
 
         return listOfData;

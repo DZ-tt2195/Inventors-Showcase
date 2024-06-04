@@ -22,6 +22,8 @@ public class Player : MonoBehaviour
 
     [ReadOnly] public List<Card> listOfHand = new List<Card>();
     [SerializeField] Transform cardhand;
+    [ReadOnly] public List<Card> listOfPlay = new List<Card>();
+    [SerializeField] Transform cardplay;
 
     public Dictionary<string, MethodInfo> dictionary = new();
 
@@ -32,31 +34,22 @@ public class Player : MonoBehaviour
 
         AddToDictionary(nameof(SendDiscard));
         AddToDictionary(nameof(RequestDraw));
-        AddToDictionary(nameof(SendDraw));
     }
 
     void MultiFunction(MethodInfo function, RpcTarget affects, object[] parameters = null)
     {
         if (PhotonNetwork.IsConnected)
-        {
             pv.RPC(function.Name, affects, parameters);
-        }
         else
-        {
             function.Invoke(this, parameters);
-        }
     }
 
     IEnumerator MultiEnumerator(MethodInfo function, RpcTarget affects, object[] parameters = null)
     {
         if (PhotonNetwork.IsConnected)
-        {
             pv.RPC(function.Name, affects, parameters);
-        }
         else
-        {
             yield return (IEnumerator)function.Invoke(this, parameters);
-        }
     }
 
     void AddToDictionary(string methodName)
@@ -85,6 +78,8 @@ public class Player : MonoBehaviour
     void RequestDraw(int cardsToDraw)
     {
         int[] cardIDs = new int[cardsToDraw];
+        Card[] listOfDraw = new Card[cardsToDraw];
+
         for (int i = 0; i < cardsToDraw; i++)
         {
             if (Manager.instance.deck.childCount == 0)
@@ -96,17 +91,31 @@ public class Player : MonoBehaviour
 
             PhotonView x = Manager.instance.deck.GetChild(i).GetComponent<PhotonView>();
             cardIDs[i] = x.ViewID;
+            Card y = Manager.instance.deck.GetChild(i).GetComponent<Card>();
+            listOfDraw[i] = y;
         }
 
-        MultiFunction(dictionary[nameof(SendDraw)], RpcTarget.All, new object[1] { cardIDs });
+        if (PhotonNetwork.IsConnected)
+            pv.RPC(nameof(SendDraw), RpcTarget.All, cardIDs);
+        else
+            AddToHand(listOfDraw);
     }
 
     [PunRPC]
     void SendDraw(int[] cardIDs)
     {
+        Card[] listOfCards = new Card[cardIDs.Length];
         for (int i = 0; i < cardIDs.Length; i++)
+            listOfCards[i] = PhotonView.Find(cardIDs[i]).gameObject.GetComponent<Card>();
+
+        AddToHand(listOfCards);
+    }
+
+    void AddToHand(Card[] listOfCards)
+    {
+        for (int i = 0; i < listOfCards.Length; i++)
         {
-            Card newCard = PhotonView.Find(cardIDs[i]).GetComponent<Card>();
+            Card newCard = listOfCards[i];
             newCard.transform.SetParent(this.cardhand);
             newCard.transform.localPosition = new Vector2(0, -1100);
             listOfHand.Add(newCard);
@@ -134,9 +143,9 @@ public class Player : MonoBehaviour
         for (int i = 0; i < listOfHand.Count; i++)
         {
             Card nextCard = listOfHand[i];
-            float startingX = (listOfHand.Count > 7) ? (-300 - (150 * multiplier)) : (listOfHand.Count - 1) * (-50 - 25 * multiplier);
-            float difference = (listOfHand.Count > 7) ? (-300 - (150 * multiplier)) * -2 / (listOfHand.Count - 1) : 100 + (50 * multiplier);
-            Vector2 newPosition = new(startingX + difference * i, -515 * canvas.transform.localScale.x);
+            float startingX = (listOfHand.Count > 7) ? (-250 - (150 * multiplier)) : (listOfHand.Count - 1) * (-50 - 25 * multiplier);
+            float difference = (listOfHand.Count > 7) ? (-250 - (150 * multiplier)) * -2 / (listOfHand.Count - 1) : 100 + (50 * multiplier);
+            Vector2 newPosition = new(startingX + difference * i, -535 * canvas.transform.localScale.x);
             StartCoroutine(nextCard.MoveCard(newPosition, nextCard.transform.localEulerAngles, 0.3f));
         }
 
@@ -144,6 +153,48 @@ public class Player : MonoBehaviour
             StartCoroutine(card.RevealCard(0.3f));
 
         //pv.RPC("UpdateMyText", RpcTarget.All, listOfHand.Count);
+    }
+
+    #endregion
+
+#region Cards in Play
+
+    public void SortPlay()
+    {
+        float firstCalc = Mathf.Round(canvas.transform.localScale.x * 4) / 4f;
+        float multiplier = firstCalc / 0.25f;
+
+        for (int i = 0; i<6; i++)
+        {
+            try
+            {
+                Card nextCard = listOfPlay[i];
+                float xPosition = -750 + (300 * multiplier * i);
+                Vector2 newPosition = new(xPosition, 300 * canvas.transform.localScale.x);
+                StartCoroutine(nextCard.MoveCard(newPosition, nextCard.transform.localEulerAngles, 0.3f));
+            }
+            catch
+            {
+                break;
+            }
+        }
+        for (int i = 0; i < 6; i++)
+        {
+            try
+            {
+                Card nextCard = listOfPlay[i+6];
+                float xPosition = -750 + (300 * multiplier * i);
+                Vector2 newPosition = new(xPosition, -90 * canvas.transform.localScale.x);
+                StartCoroutine(nextCard.MoveCard(newPosition, nextCard.transform.localEulerAngles, 0.3f));
+            }
+            catch
+            {
+                break;
+            }
+        }
+
+        foreach (Card card in listOfPlay)
+            StartCoroutine(card.RevealCard(0.3f));
     }
 
     #endregion

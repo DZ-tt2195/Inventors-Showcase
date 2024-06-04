@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MyBox;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Manager : MonoBehaviour
 {
@@ -10,7 +11,6 @@ public class Manager : MonoBehaviour
 
     [Foldout("Text", true)]
     [ReadOnly] public TMP_Text instructions;
-    [ReadOnly] public TMP_Text numbers;
     public Transform deck;
     public Transform discard;
 
@@ -19,4 +19,19 @@ public class Manager : MonoBehaviour
     [ReadOnly] public bool decrease = true;
     [ReadOnly] public bool gameon = false;
 
+    private void Awake()
+    {
+        instructions = GameObject.Find("Instructions").GetComponent<TMP_Text>();
+
+    }
+
+    private void FixedUpdate()
+    {
+        if (decrease)
+            opacity -= 0.05f;
+        else
+            opacity += 0.05f;
+        if (opacity < 0 || opacity > 1)
+            decrease = !decrease;
+    }
 }

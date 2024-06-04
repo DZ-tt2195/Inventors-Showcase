@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Linq;
 using UnityEngine.UI;
 using Photon.Pun;
+using TMPro;
 
 [RequireComponent(typeof(PhotonView))]
 public class Card : MonoBehaviour
@@ -16,6 +17,10 @@ public class Card : MonoBehaviour
     [ReadOnly] public Image image;
     [ReadOnly] public CardData dataFile;
     protected CanvasGroup cg;
+
+    protected TMP_Text titleText;
+    protected TMP_Text descriptionText;
+    protected TMP_Text artText;
 
     public Sprite faceDownSprite;
     [ReadOnly] public Sprite originalSprite;
@@ -30,6 +35,9 @@ public class Card : MonoBehaviour
     [PunRPC]
     public virtual void GetDataFile()
     {
+        titleText.text = dataFile.cardName;
+        descriptionText.text = dataFile.textBox;
+        artText.text = dataFile.artCredit;
     }
 
     public IEnumerator MoveCard(Vector2 newPos, Vector3 newRot, float waitTime)
