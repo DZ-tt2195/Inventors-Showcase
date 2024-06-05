@@ -26,14 +26,26 @@ public class Player : MonoBehaviour
     [SerializeField] Transform cardplay;
 
     public Dictionary<string, MethodInfo> dictionary = new();
+    bool myTurn;
 
     private void Awake()
     {
         pv = GetComponent<PhotonView>();
+        if (PhotonNetwork.IsConnected && pv.AmOwner)
+            pv.Owner.NickName = PlayerPrefs.GetString("Online Username");
+
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
 
         AddToDictionary(nameof(SendDiscard));
         AddToDictionary(nameof(RequestDraw));
+        AddToDictionary(nameof(TakeTurn));
+        AddToDictionary(nameof(EndTurn));
+    }
+
+    private void Start()
+    {
+        if (PhotonNetwork.IsConnected)
+            this.name = pv.Owner.NickName;
     }
 
     void MultiFunction(MethodInfo function, RpcTarget affects, object[] parameters = null)
@@ -198,5 +210,29 @@ public class Player : MonoBehaviour
     }
 
     #endregion
+
+#region Turn
+
+    public IEnumerator TakeTurnRPC()
+    {
+        StartCoroutine(MultiEnumerator(dictionary[nameof(TakeTurn)], RpcTarget.All));
+        myTurn = true;
+        while (myTurn)
+            yield return null;
+    }
+
+    [PunRPC]
+    IEnumerator TakeTurn()
+    {
+        yield return null;
+    }
+
+    [PunRPC]
+    void EndTurn()
+    {
+        myTurn = false;
+    }
+
+#endregion
 
 }

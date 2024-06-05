@@ -44,6 +44,9 @@ MonoBehaviour:
   - SendDiscard
   - SendDraw
   - AddText
+  - EndTurn
+  - TakeTurn
+  - AssignPlayers
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 0
