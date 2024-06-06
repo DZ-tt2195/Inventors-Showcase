@@ -33,7 +33,7 @@ public class Card : MonoBehaviour
     }
 
     [PunRPC]
-    public virtual void GetDataFile()
+    public virtual void GetDataFile(int fileSlot)
     {
         titleText.text = dataFile.cardName;
         descriptionText.text = dataFile.textBox;

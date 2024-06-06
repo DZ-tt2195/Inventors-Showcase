@@ -10,6 +10,8 @@ public class CarryVariables : MonoBehaviour
 {
     public static CarryVariables instance;
     public Player playerPrefab;
+    public Employee employeePrefab;
+    public Action actionPrefab;
 
     PhotonView pv;
     [ReadOnly] public Dictionary<string, MethodInfo> dictionary = new();

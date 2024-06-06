@@ -474,7 +474,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1271499795}
         m_TargetAssemblyTypeName: ConnectToLobby, Assembly-CSharp
         m_MethodName: Join
         m_Mode: 5
@@ -607,7 +607,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1271499795}
         m_TargetAssemblyTypeName: ConnectToLobby, Assembly-CSharp
         m_MethodName: Join
         m_Mode: 5
@@ -1076,7 +1076,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1271499795}
         m_TargetAssemblyTypeName: ConnectToLobby, Assembly-CSharp
         m_MethodName: Join
         m_Mode: 5
@@ -1156,7 +1156,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fe77c52a8f0843439d83586b5b3c9b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 0}
+  playerPrefab: {fileID: 8107050060095843924, guid: 8552ffe2815504ba6bdbebb2664acac5, type: 3}
+  employeePrefab: {fileID: 5684968854369860787, guid: 3de7ea5a0b51444a58b1b274a1c8b5a6, type: 3}
+  actionPrefab: {fileID: 4563540877604993386, guid: 7273cc60c20f94f81a5a0fe5ab9834df, type: 3}
 --- !u!114 &631609475
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1176,7 +1178,7 @@ MonoBehaviour:
   OwnershipTransfer: 0
   observableSearch: 2
   ObservedComponents: []
-  sceneViewId: 1
+  sceneViewId: 999
   InstantiationId: 0
   isRuntimeInstantiated: 0
 --- !u!4 &631609476
@@ -1277,7 +1279,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1271499795}
         m_TargetAssemblyTypeName: ConnectToLobby, Assembly-CSharp
         m_MethodName: Join
         m_Mode: 5
@@ -1410,7 +1412,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1271499795}
         m_TargetAssemblyTypeName: ConnectToLobby, Assembly-CSharp
         m_MethodName: Join
         m_Mode: 5
@@ -2352,7 +2354,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1271499795}
         m_TargetAssemblyTypeName: ConnectToLobby, Assembly-CSharp
         m_MethodName: Join
         m_Mode: 5
@@ -2485,7 +2487,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1271499795}
         m_TargetAssemblyTypeName: ConnectToLobby, Assembly-CSharp
         m_MethodName: Join
         m_Mode: 5
@@ -2882,7 +2884,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1271499795}
         m_TargetAssemblyTypeName: ConnectToLobby, Assembly-CSharp
         m_MethodName: Join
         m_Mode: 5
@@ -3507,7 +3509,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1271499795}
         m_TargetAssemblyTypeName: ConnectToLobby, Assembly-CSharp
         m_MethodName: Join
         m_Mode: 5

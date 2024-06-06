@@ -15,7 +15,7 @@ using System.Reflection;
 public class Player : MonoBehaviour
 {
 
-#region Setup
+#region Variables
 
     [ReadOnly] public PhotonView pv;
     Canvas canvas;
@@ -27,6 +27,11 @@ public class Player : MonoBehaviour
 
     public Dictionary<string, MethodInfo> dictionary = new();
     bool myTurn;
+    [ReadOnly] public int playerPosiiton;
+
+    #endregion
+
+#region Setup
 
     private void Awake()
     {
@@ -71,7 +76,13 @@ public class Player : MonoBehaviour
             dictionary.Add(methodName, method);
     }
 
-    #endregion
+    internal void AssignInfo(int position)
+    {
+        this.playerPosiiton = position;
+        this.transform.localPosition = new Vector3(-280 + 2500 * this.playerPosiiton, 0, 0);
+    }
+
+#endregion
 
 #region Cards in Hand
 

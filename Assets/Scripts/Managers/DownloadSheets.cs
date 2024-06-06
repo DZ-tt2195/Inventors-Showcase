@@ -66,9 +66,12 @@ public class DownloadSheets : MonoBehaviour
             while (group.AnyProcessing)
                 yield return null;
         }
+
+        mainActionData = ReadCardData("Main Action");
+        deckCardData = ReadCardData("Cards");
     }
 
-    public IEnumerator Download(string range)
+    IEnumerator Download(string range)
     {
         string url = $"{baseUrl}{ID}/values/{range}?key={apiKey}";
         using UnityWebRequest www = UnityWebRequest.Get(url);
@@ -108,7 +111,7 @@ public class DownloadSheets : MonoBehaviour
         return list;
     }
 
-    public List<CardData> ReadCardData(string fileToLoad)
+    List<CardData> ReadCardData(string fileToLoad)
     {
         List<CardData> listOfData = new();
         var data = ReadFile(fileToLoad);

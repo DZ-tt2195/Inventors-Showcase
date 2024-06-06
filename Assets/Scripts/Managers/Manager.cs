@@ -14,6 +14,9 @@ using System.Reflection;
 [RequireComponent(typeof(PhotonView))]
 public class Manager : MonoBehaviour
 {
+
+#region Variables
+
     public static Manager instance;
     [ReadOnly] public PhotonView pv;
 
@@ -21,17 +24,26 @@ public class Manager : MonoBehaviour
     public TMP_Text instructions;
     public Transform deck;
     public Transform discard;
+    public Transform actions;
 
     [Foldout("Animation", true)]
     [ReadOnly] public float opacity = 1;
     [ReadOnly] public bool decrease = true;
     [ReadOnly] public bool gameon = false;
 
+    [Foldout("Lists", true)]
+    [ReadOnly] public List<Player> playersInOrder = new();
+
     [ReadOnly] public Dictionary<string, MethodInfo> dictionary = new();
+
+    #endregion
+
+#region Setup
 
     private void Awake()
     {
-        AddToDictionary(nameof(AssignPlayers));
+        pv = GetComponent<PhotonView>();
+        AddToDictionary(nameof(AddPlayer));
     }
 
     void MultiFunction(MethodInfo function, RpcTarget affects, object[] parameters = null)
@@ -84,7 +96,6 @@ public class Manager : MonoBehaviour
         }
         else
         {
-            BeginGame();
         }
     }
 
@@ -99,32 +110,78 @@ public class Manager : MonoBehaviour
         if (PhotonNetwork.IsMasterClient)
         {
             yield return new WaitForSeconds(0.5f);
-            BeginGame();
+            GetPlayers();
         }
     }
 
-    void BeginGame()
+    void GetPlayers()
     {
-        if (PhotonNetwork.IsConnected)
-        {
-            for (int i = 0; i < PhotonNetwork.PlayerList.Length; i++)
-            {
-                Player nextPlayer = GameObject.Find(PhotonNetwork.PlayerList[i].NickName).GetComponent<Player>();
-                //nextPlayer.PlayerSetup(i, nextPlayer.name);
-            }
-        }
+        List<Player> listOfPlayers = FindObjectsOfType<Player>().ToList();
 
-        MultiFunction(dictionary[nameof(AssignPlayers)], RpcTarget.All);
-        StartCoroutine(PlayUntilFinish());
+        for (int i = 0; i < PhotonNetwork.PlayerList.Length; i++)
+        {
+            int randomRemove = Random.Range(0, listOfPlayers.Count);
+            MultiFunction(dictionary[nameof(AddPlayer)], RpcTarget.All, new object[2] { listOfPlayers[randomRemove].name, i });
+            listOfPlayers.RemoveAt(randomRemove);
+        }
     }
 
     [PunRPC]
-    void AssignPlayers()
+    void AddPlayer(string name, int position)
     {
+        Player nextPlayer = GameObject.Find(name).GetComponent<Player>();
+        playersInOrder.Insert(position, nextPlayer);
+        nextPlayer.AssignInfo(position);
     }
+
+    void CreateEmployees()
+    {
+        for (int i = 0; i< DownloadSheets.instance.deckCardData.Count; i++)
+        {
+            Employee nextCard = null;
+            if (PhotonNetwork.IsConnected)
+            {
+                nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.employeePrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Employee>();
+                nextCard.pv.RPC("GetDataFile", RpcTarget.All, i);
+            }
+            else
+            {
+                nextCard = Instantiate(CarryVariables.instance.employeePrefab, new Vector3(-10000, -10000), new Quaternion());
+                nextCard.GetDataFile(i);
+            }
+        }
+        deck.Shuffle();
+    }
+
+    void CreateActions()
+    {
+        for (int i = 0; i < DownloadSheets.instance.mainActionData.Count; i++)
+        {
+            Action nextCard = null;
+            if (PhotonNetwork.IsConnected)
+            {
+                nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.actionPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Action>();
+                nextCard.pv.RPC("GetDataFile", RpcTarget.All, i);
+            }
+            else
+            {
+                nextCard = Instantiate(CarryVariables.instance.actionPrefab, new Vector3(-10000, -10000), new Quaternion());
+                nextCard.GetDataFile(i);
+            }
+        }
+        deck.Shuffle();
+
+    }
+
+    #endregion
+
+#region Gameplay
 
     IEnumerator PlayUntilFinish()
     {
         yield return null;
     }
+
+    #endregion
+
 }

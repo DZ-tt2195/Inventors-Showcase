@@ -47,6 +47,7 @@ MonoBehaviour:
   - EndTurn
   - TakeTurn
   - AssignPlayers
+  - AddPlayer
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 0

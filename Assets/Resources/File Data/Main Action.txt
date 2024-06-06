@@ -27,7 +27,7 @@
     ],
     [
       "Collect",
-      "Gain 5 [Coin].",
+      "Gain 4 [Coin].",
       "",
       "",
       "",
