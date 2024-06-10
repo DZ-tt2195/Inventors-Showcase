@@ -12,6 +12,8 @@ public class CarryVariables : MonoBehaviour
     public Player playerPrefab;
     public Employee employeePrefab;
     public Action actionPrefab;
+    public Popup cardPopup;
+    public Popup textPopup;
 
     PhotonView pv;
     [ReadOnly] public Dictionary<string, MethodInfo> dictionary = new();

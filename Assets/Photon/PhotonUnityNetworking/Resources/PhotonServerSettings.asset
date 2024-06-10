@@ -48,6 +48,11 @@ MonoBehaviour:
   - TakeTurn
   - AssignPlayers
   - AddPlayer
+  - GainCoin
+  - LoseCoin
+  - RemoveNegCrown
+  - TakeNegCrown
+  - AddToPlay
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 0

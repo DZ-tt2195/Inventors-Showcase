@@ -25,9 +25,16 @@ public class Player : MonoBehaviour
     [ReadOnly] public List<Card> listOfPlay = new List<Card>();
     [SerializeField] Transform cardplay;
 
+    public int coins;
+    public int negCrowns;
+
     public Dictionary<string, MethodInfo> dictionary = new();
     bool myTurn;
     [ReadOnly] public int playerPosiiton;
+
+    protected int choice;
+    protected Card chosenCard;
+    [ReadOnly] public List<Card> cardsPlayed = new();
 
     #endregion
 
@@ -40,11 +47,6 @@ public class Player : MonoBehaviour
             pv.Owner.NickName = PlayerPrefs.GetString("Online Username");
 
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
-
-        AddToDictionary(nameof(SendDiscard));
-        AddToDictionary(nameof(RequestDraw));
-        AddToDictionary(nameof(TakeTurn));
-        AddToDictionary(nameof(EndTurn));
     }
 
     private void Start()
@@ -53,20 +55,26 @@ public class Player : MonoBehaviour
             this.name = pv.Owner.NickName;
     }
 
-    void MultiFunction(MethodInfo function, RpcTarget affects, object[] parameters = null)
+    void MultiFunction(string methodName, RpcTarget affects, object[] parameters = null)
     {
+        if (!dictionary.ContainsKey(methodName))
+            AddToDictionary(methodName);
+
         if (PhotonNetwork.IsConnected)
-            pv.RPC(function.Name, affects, parameters);
+            pv.RPC(dictionary[methodName].Name, affects, parameters);
         else
-            function.Invoke(this, parameters);
+            dictionary[methodName].Invoke(this, parameters);
     }
 
-    IEnumerator MultiEnumerator(MethodInfo function, RpcTarget affects, object[] parameters = null)
+    IEnumerator MultiEnumerator(string methodName, RpcTarget affects, object[] parameters = null)
     {
+        if (!dictionary.ContainsKey(methodName))
+            AddToDictionary(methodName);
+
         if (PhotonNetwork.IsConnected)
-            pv.RPC(function.Name, affects, parameters);
+            pv.RPC(dictionary[methodName].Name, affects, parameters);
         else
-            yield return (IEnumerator)function.Invoke(this, parameters);
+            yield return (IEnumerator)dictionary[methodName].Invoke(this, parameters);
     }
 
     void AddToDictionary(string methodName)
@@ -220,13 +228,65 @@ public class Player : MonoBehaviour
             StartCoroutine(card.RevealCard(0.3f));
     }
 
+    public IEnumerator ChooseCardToPlay(bool replace)
+    {
+        List<Card> cardsToPlay = listOfHand.Where(card => card.dataFile.coinCost <= coins).ToList();
+        yield return ChooseCard(cardsToPlay, true);
+
+        if (chosenCard != null)
+            MultiFunction(nameof(AddToPlay), RpcTarget.All, new object[1] { chosenCard.pv.ViewID });
+
+        yield return new WaitForSeconds(1f);
+    }
+
+    [PunRPC]
+    void AddToPlay(int cardID)
+    {
+        Card toPlay = PhotonView.Find(cardID).GetComponent<Card>();
+        cardsPlayed.Add(toPlay);
+        listOfHand.Remove(toPlay);
+        listOfPlay.Add(toPlay);
+        toPlay.transform.SetParent(cardplay);
+        LoseCoin(toPlay.dataFile.coinCost);
+        Log.instance.AddText($"{this.name} plays {toPlay.name}.");
+        SortPlay();
+    }
+
     #endregion
+
+#region Resources
+
+    [PunRPC]
+    void GainCoin(int coins)
+    {
+        this.coins += coins;
+    }
+
+    [PunRPC]
+    void LoseCoin(int coins)
+    {
+        this.coins = Mathf.Max(this.coins - coins, 0);
+    }
+
+    [PunRPC]
+    void TakeNegCrown(int crowns)
+    {
+        this.negCrowns += crowns;
+    }
+
+    [PunRPC]
+    void RemoveNegCrown(int crowns)
+    {
+        this.negCrowns = Mathf.Max(this.negCrowns - crowns, 0);
+    }
+
+#endregion
 
 #region Turn
 
     public IEnumerator TakeTurnRPC()
     {
-        StartCoroutine(MultiEnumerator(dictionary[nameof(TakeTurn)], RpcTarget.All));
+        StartCoroutine(MultiEnumerator(nameof(TakeTurn), RpcTarget.All));
         myTurn = true;
         while (myTurn)
             yield return null;
@@ -235,6 +295,18 @@ public class Player : MonoBehaviour
     [PunRPC]
     IEnumerator TakeTurn()
     {
+        if (this.pv.IsMine)
+        {
+            yield return ChooseAction();
+
+            yield return ChooseCardToPlay(false);
+
+            MultiFunction(nameof(EndTurn), RpcTarget.All);
+        }
+    }
+
+    IEnumerator ChooseAction()
+    {
         yield return null;
     }
 
@@ -242,6 +314,42 @@ public class Player : MonoBehaviour
     void EndTurn()
     {
         myTurn = false;
+        cardsPlayed.Clear();
+    }
+
+    IEnumerator ChooseCard(List<Card> possibleCards, bool optional)
+    {
+        choice = -1;
+        chosenCard = null;
+
+        for (int i = 0; i<possibleCards.Count; i++)
+        {
+            Card nextCard = possibleCards[i];
+            int buttonNumber = i;
+
+            nextCard.button.onClick.RemoveAllListeners();
+            nextCard.button.interactable = true;
+            nextCard.button.onClick.AddListener(() => ReceiveChoice(buttonNumber));
+        }
+
+        while (choice == -1)
+        {
+            yield return null;
+        }
+
+        chosenCard = possibleCards[choice];
+
+        for (int i = 0; i<possibleCards.Count; i++)
+        {
+            Card nextCard = possibleCards[i];
+            nextCard.button.onClick.RemoveAllListeners();
+            nextCard.button.interactable = false;
+        }
+    }
+
+    void ReceiveChoice(int number)
+    {
+        choice = number;
     }
 
 #endregion

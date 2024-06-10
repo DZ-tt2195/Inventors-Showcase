@@ -29,7 +29,7 @@ public class Manager : MonoBehaviour
     [Foldout("Animation", true)]
     [ReadOnly] public float opacity = 1;
     [ReadOnly] public bool decrease = true;
-    [ReadOnly] public bool gameon = false;
+    [ReadOnly] public bool gameOn = false;
 
     [Foldout("Lists", true)]
     [ReadOnly] public List<Player> playersInOrder = new();
@@ -179,7 +179,15 @@ public class Manager : MonoBehaviour
 
     IEnumerator PlayUntilFinish()
     {
+        gameOn = true;
         yield return null;
+
+        for (int i = 0; i < playersInOrder.Count; i++)
+        {
+            yield return playersInOrder[i].TakeTurnRPC();
+            yield return new WaitForSeconds(0.25f);
+        }
+
     }
 
     #endregion

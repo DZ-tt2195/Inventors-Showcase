@@ -1159,6 +1159,8 @@ MonoBehaviour:
   playerPrefab: {fileID: 8107050060095843924, guid: 8552ffe2815504ba6bdbebb2664acac5, type: 3}
   employeePrefab: {fileID: 5684968854369860787, guid: 3de7ea5a0b51444a58b1b274a1c8b5a6, type: 3}
   actionPrefab: {fileID: 4563540877604993386, guid: 7273cc60c20f94f81a5a0fe5ab9834df, type: 3}
+  cardPopup: {fileID: 3183939439193871304, guid: 293c9a8a887c64616a8e499c379c4cd7, type: 3}
+  textPopup: {fileID: 7594585533340515175, guid: 0ce383b7ea8ca488c810cadf3b089e7e, type: 3}
 --- !u!114 &631609475
 MonoBehaviour:
   m_ObjectHideFlags: 0

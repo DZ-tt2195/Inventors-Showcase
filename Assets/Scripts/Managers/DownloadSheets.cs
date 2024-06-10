@@ -164,7 +164,7 @@ public class DownloadSheets : MonoBehaviour
         }
     }
 
-    string[] SpliceString(string text, char splitUp)
+    public string[] SpliceString(string text, char splitUp)
     {
         if (!text.IsNullOrEmpty())
         {
