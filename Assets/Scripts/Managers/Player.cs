@@ -55,7 +55,7 @@ public class Player : MonoBehaviour
             this.name = pv.Owner.NickName;
     }
 
-    void MultiFunction(string methodName, RpcTarget affects, object[] parameters = null)
+    public void MultiFunction(string methodName, RpcTarget affects, object[] parameters = null)
     {
         if (!dictionary.ContainsKey(methodName))
             AddToDictionary(methodName);
@@ -66,7 +66,7 @@ public class Player : MonoBehaviour
             dictionary[methodName].Invoke(this, parameters);
     }
 
-    IEnumerator MultiEnumerator(string methodName, RpcTarget affects, object[] parameters = null)
+    public IEnumerator MultiEnumerator(string methodName, RpcTarget affects, object[] parameters = null)
     {
         if (!dictionary.ContainsKey(methodName))
             AddToDictionary(methodName);
@@ -106,7 +106,7 @@ public class Player : MonoBehaviour
     }
 
     [PunRPC]
-    void RequestDraw(int cardsToDraw)
+    public void RequestDraw(int cardsToDraw)
     {
         int[] cardIDs = new int[cardsToDraw];
         Card[] listOfDraw = new Card[cardsToDraw];
@@ -228,15 +228,22 @@ public class Player : MonoBehaviour
             StartCoroutine(card.RevealCard(0.3f));
     }
 
-    public IEnumerator ChooseCardToPlay(bool replace)
+    public IEnumerator ChooseCardToPlay(List<Card> cardsToPlay, bool replace)
     {
-        List<Card> cardsToPlay = listOfHand.Where(card => card.dataFile.coinCost <= coins).ToList();
+        //List<Card> cardsToPlay = listOfHand.Where(card => card.dataFile.coinCost <= coins).ToList();
         yield return ChooseCard(cardsToPlay, true);
 
         if (chosenCard != null)
-            MultiFunction(nameof(AddToPlay), RpcTarget.All, new object[1] { chosenCard.pv.ViewID });
+        {
+            if (replace)
+            {
 
-        yield return new WaitForSeconds(1f);
+            }
+
+            MultiFunction(nameof(AddToPlay), RpcTarget.All, new object[1] { chosenCard.pv.ViewID });
+            yield return new WaitForSeconds(0.5f);
+            yield return chosenCard.CommandInstructions(this);
+        }
     }
 
     [PunRPC]
@@ -257,25 +264,25 @@ public class Player : MonoBehaviour
 #region Resources
 
     [PunRPC]
-    void GainCoin(int coins)
+    public void GainCoin(int coins)
     {
         this.coins += coins;
     }
 
     [PunRPC]
-    void LoseCoin(int coins)
+    public void LoseCoin(int coins)
     {
         this.coins = Mathf.Max(this.coins - coins, 0);
     }
 
     [PunRPC]
-    void TakeNegCrown(int crowns)
+    public void TakeNegCrown(int crowns)
     {
         this.negCrowns += crowns;
     }
 
     [PunRPC]
-    void RemoveNegCrown(int crowns)
+    public void RemoveNegCrown(int crowns)
     {
         this.negCrowns = Mathf.Max(this.negCrowns - crowns, 0);
     }
@@ -299,7 +306,7 @@ public class Player : MonoBehaviour
         {
             yield return ChooseAction();
 
-            yield return ChooseCardToPlay(false);
+            yield return ChooseCardToPlay(listOfHand.Where(card => card.dataFile.coinCost <= coins).ToList(), false);
 
             MultiFunction(nameof(EndTurn), RpcTarget.All);
         }

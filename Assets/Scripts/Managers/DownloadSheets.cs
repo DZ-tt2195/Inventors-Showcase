@@ -7,6 +7,7 @@ using UnityEngine.Networking;
 using System.IO;
 using System;
 using System.Text.RegularExpressions;
+using Photon.Pun.Demo.SlotRacer.Utils;
 
 [Serializable]
 public class CardData
@@ -20,10 +21,14 @@ public class CardData
     public int numDraw;
     public int numGain;
     public int numCrowns;
+    public int numPlayCost;
     public int numMisc;
     public bool isDirector;
     public string artCredit;
+    public PlayerTarget[] whoToTarget;
 }
+
+public enum PlayerTarget { You, All, Others }
 
 public class DownloadSheets : MonoBehaviour
 {
@@ -118,14 +123,20 @@ public class DownloadSheets : MonoBehaviour
 
         for (int i = 0; i < data[1].Length; i++)
         {
-            if (!cardSheetsColumns.ContainsKey(data[0][i]))
-                cardSheetsColumns.Add(data[0][i], i);
+            string next = data[1][i].Trim().Replace("\"", "");
+            if (!cardSheetsColumns.ContainsKey(next))
+            {
+                cardSheetsColumns.Add(next, i);
+            }
         }
 
         for (int i = 2; i < data.Length; i++)
         {
             CardData nextData = new();
             listOfData.Add(nextData);
+
+            for (int j = 0; j < data[i].Length; j++)
+                data[i][j] = data[i][j].Trim().Replace("\"", "").Replace("\\", "").Replace("]", "");
 
             nextData.cardName = data[i][cardSheetsColumns[nameof(CardData.cardName)]];
             nextData.textBox = data[i][cardSheetsColumns[nameof(CardData.textBox)]];
@@ -141,13 +152,37 @@ public class DownloadSheets : MonoBehaviour
             nextData.numDraw = StringToInt(data[i][cardSheetsColumns[nameof(CardData.numDraw)]]);
             nextData.numGain = StringToInt(data[i][cardSheetsColumns[nameof(CardData.numGain)]]);
             nextData.numCrowns = StringToInt(data[i][cardSheetsColumns[nameof(CardData.numCrowns)]]);
+            nextData.numPlayCost = StringToInt(data[i][cardSheetsColumns[nameof(CardData.numPlayCost)]]);
             nextData.numMisc = StringToInt(data[i][cardSheetsColumns[nameof(CardData.numMisc)]]);
 
             nextData.isDirector = data[i][cardSheetsColumns[nameof(CardData.numMisc)]] == "TRUE";
             nextData.artCredit = data[i][cardSheetsColumns[nameof(CardData.artCredit)]];
+
+            string[] listOfTargets = (data[i][cardSheetsColumns[nameof(CardData.whoToTarget)]].Equals("") ? new string[1] { "None" } : SpliceString(data[i][cardSheetsColumns[nameof(CardData.whoToTarget)]].Trim().ToUpper(), '-'));
+            PlayerTarget[] convertToTargets = new PlayerTarget[listOfTargets.Length];
+            for (int j = 0; j < listOfTargets.Length; j++)
+                convertToTargets[j] = StringToPlayerTarget(listOfTargets[j]);
+            nextData.whoToTarget = convertToTargets;
         }
 
         return listOfData;
+    }
+
+    PlayerTarget StringToPlayerTarget(string line)
+    {
+        switch (line)
+        {
+            case "YOU":
+                return PlayerTarget.You;
+            case "ALL":
+                return PlayerTarget.All;
+            case "OTHERS":
+                return PlayerTarget.Others;
+            default:
+                Debug.LogError("missing team target");
+                break;
+        }
+        return PlayerTarget.You;
     }
 
     int StringToInt(string line)
@@ -159,7 +194,6 @@ public class DownloadSheets : MonoBehaviour
         }
         catch (FormatException)
         {
-            Debug.LogError(line);
             return -1;
         }
     }

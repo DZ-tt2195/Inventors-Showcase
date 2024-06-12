@@ -43,31 +43,28 @@ public class Manager : MonoBehaviour
     private void Awake()
     {
         pv = GetComponent<PhotonView>();
-        AddToDictionary(nameof(AddPlayer));
     }
 
-    void MultiFunction(MethodInfo function, RpcTarget affects, object[] parameters = null)
+    protected void MultiFunction(string methodName, RpcTarget affects, object[] parameters = null)
     {
+        if (!dictionary.ContainsKey(methodName))
+            AddToDictionary(methodName);
+
         if (PhotonNetwork.IsConnected)
-        {
-            pv.RPC(function.Name, affects, parameters);
-        }
+            pv.RPC(dictionary[methodName].Name, affects, parameters);
         else
-        {
-            function.Invoke(this, parameters);
-        }
+            dictionary[methodName].Invoke(this, parameters);
     }
 
-    IEnumerator MultiEnumerator(MethodInfo function, RpcTarget affects, object[] parameters = null)
+    protected IEnumerator MultiEnumerator(string methodName, RpcTarget affects, object[] parameters = null)
     {
+        if (!dictionary.ContainsKey(methodName))
+            AddToDictionary(methodName);
+
         if (PhotonNetwork.IsConnected)
-        {
-            pv.RPC(function.Name, affects, parameters);
-        }
+            pv.RPC(dictionary[methodName].Name, affects, parameters);
         else
-        {
-            yield return (IEnumerator)function.Invoke(this, parameters);
-        }
+            yield return (IEnumerator)dictionary[methodName].Invoke(this, parameters);
     }
 
     void AddToDictionary(string methodName)
@@ -121,7 +118,7 @@ public class Manager : MonoBehaviour
         for (int i = 0; i < PhotonNetwork.PlayerList.Length; i++)
         {
             int randomRemove = Random.Range(0, listOfPlayers.Count);
-            MultiFunction(dictionary[nameof(AddPlayer)], RpcTarget.All, new object[2] { listOfPlayers[randomRemove].name, i });
+            MultiFunction(nameof(AddPlayer), RpcTarget.All, new object[2] { listOfPlayers[randomRemove].name, i });
             listOfPlayers.RemoveAt(randomRemove);
         }
     }
