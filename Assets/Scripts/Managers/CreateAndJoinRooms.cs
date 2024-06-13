@@ -73,7 +73,7 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
         Screen.fullScreenMode = (fullScreen.isOn) ? FullScreenMode.ExclusiveFullScreen : FullScreenMode.Windowed;
     }
 
-    public void CreateRoom()
+    public void CreateRoom(int playerCount)
     {
         if (create.text == "")
         {
@@ -86,7 +86,7 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
         else
         { 
             RoomOptions roomOptions = new RoomOptions();
-            roomOptions.MaxPlayers = (byte)2;
+            roomOptions.MaxPlayers = (byte)playerCount;
             PhotonNetwork.CreateRoom(create.text.ToUpper(), roomOptions, null);
         }
     }

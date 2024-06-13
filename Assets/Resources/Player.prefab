@@ -74,11 +74,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pv: {fileID: 0}
+  coins: 0
+  negCrowns: 0
+  playerPosiiton: 0
   listOfHand: []
   cardhand: {fileID: 1525575952823927673}
   listOfPlay: []
   cardplay: {fileID: 5339597759091133530}
-  playerPosiiton: 0
+  cardsPlayed: []
 --- !u!1 &6326756469621649633
 GameObject:
   m_ObjectHideFlags: 0

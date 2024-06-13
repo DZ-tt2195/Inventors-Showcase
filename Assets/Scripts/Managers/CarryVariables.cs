@@ -4,18 +4,29 @@ using MyBox;
 using System.Reflection;
 using Photon.Pun;
 using System.Collections;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using TMPro;
 
 [RequireComponent(typeof(PhotonView))]
 public class CarryVariables : MonoBehaviour
 {
     public static CarryVariables instance;
+    [Foldout("Prefabs", true)]
     public Player playerPrefab;
     public Employee employeePrefab;
     public Action actionPrefab;
     public Popup cardPopup;
     public Popup textPopup;
 
+    [Foldout("Right click", true)]
+    [SerializeField] Transform rightClickBackground;
+    [SerializeField] CanvasGroup cg;
+    [SerializeField] CardLayout rightClickCard;
+
+    [Foldout("Misc", true)]
     PhotonView pv;
+    [SerializeField] Transform permanentCanvas;
     [ReadOnly] public Dictionary<string, MethodInfo> dictionary = new();
 
     private void Awake()
@@ -33,38 +44,45 @@ public class CarryVariables : MonoBehaviour
         }
     }
 
-    private void Start()
+    public void MultiFunction(string methodName, RpcTarget affects, object[] parameters = null)
     {
+        if (!dictionary.ContainsKey(methodName))
+            AddToDictionary(methodName);
+
+        if (PhotonNetwork.IsConnected)
+            pv.RPC(dictionary[methodName].Name, affects, parameters);
+        else
+            dictionary[methodName].Invoke(this, parameters);
     }
 
-    public void AddToDictionary(string methodName)
+    public IEnumerator MultiEnumerator(string methodName, RpcTarget affects, object[] parameters = null)
+    {
+        if (!dictionary.ContainsKey(methodName))
+            AddToDictionary(methodName);
+
+        if (PhotonNetwork.IsConnected)
+            pv.RPC(dictionary[methodName].Name, affects, parameters);
+        else
+            yield return (IEnumerator)dictionary[methodName].Invoke(this, parameters);
+    }
+
+    void AddToDictionary(string methodName)
     {
         MethodInfo method = typeof(CarryVariables).GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         if (method != null && method.ReturnType == typeof(void) || method.ReturnType == typeof(IEnumerator))
             dictionary.Add(methodName, method);
     }
 
-    public void MultiFunction(MethodInfo function, RpcTarget affects, object[] parameters = null)
+    private void Update()
     {
-        if (PhotonNetwork.IsConnected)
-        {
-            pv.RPC(function.Name, affects, parameters);
-        }
-        else
-        {
-            function.Invoke(this, parameters);
-        }
+        if (Input.GetMouseButtonDown(0))
+            rightClickBackground.gameObject.SetActive(false);
     }
 
-    IEnumerator MultiEnumerator(MethodInfo function, RpcTarget affects, object[] parameters = null)
+    public void RightClickDisplay(float alpha, Sprite sprite, CardData dataFile)
     {
-        if (PhotonNetwork.IsConnected)
-        {
-            pv.RPC(function.Name, affects, parameters);
-        }
-        else
-        {
-            yield return (IEnumerator)function.Invoke(this, parameters);
-        }
+        rightClickBackground.gameObject.SetActive(true);
+        cg.alpha = alpha;
+        rightClickCard.FillInCards(dataFile, sprite);
     }
 }

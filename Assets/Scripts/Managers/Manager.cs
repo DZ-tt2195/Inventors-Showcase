@@ -33,7 +33,6 @@ public class Manager : MonoBehaviour
 
     [Foldout("Lists", true)]
     [ReadOnly] public List<Player> playersInOrder = new();
-
     [ReadOnly] public Dictionary<string, MethodInfo> dictionary = new();
 
     #endregion
@@ -42,6 +41,7 @@ public class Manager : MonoBehaviour
 
     private void Awake()
     {
+        instance = this;
         pv = GetComponent<PhotonView>();
     }
 
@@ -93,6 +93,11 @@ public class Manager : MonoBehaviour
         }
         else
         {
+            Player solitairePlayer = Instantiate(CarryVariables.instance.playerPrefab, new Vector3(-10000, -10000, 0), new Quaternion());
+            solitairePlayer.name = "Solitaire";
+            GetPlayers();
+            CreateEmployees();
+            CreateActions();
         }
     }
 
@@ -108,18 +113,21 @@ public class Manager : MonoBehaviour
         {
             yield return new WaitForSeconds(0.5f);
             GetPlayers();
+            CreateEmployees();
+            CreateActions();
         }
     }
 
     void GetPlayers()
     {
         List<Player> listOfPlayers = FindObjectsOfType<Player>().ToList();
-
-        for (int i = 0; i < PhotonNetwork.PlayerList.Length; i++)
+        int counter = 0;
+        while (listOfPlayers.Count > 0)
         {
             int randomRemove = Random.Range(0, listOfPlayers.Count);
-            MultiFunction(nameof(AddPlayer), RpcTarget.All, new object[2] { listOfPlayers[randomRemove].name, i });
+            MultiFunction(nameof(AddPlayer), RpcTarget.All, new object[2] { listOfPlayers[randomRemove].name, counter });
             listOfPlayers.RemoveAt(randomRemove);
+            counter++;
         }
     }
 
@@ -133,21 +141,29 @@ public class Manager : MonoBehaviour
 
     void CreateEmployees()
     {
-        for (int i = 0; i< DownloadSheets.instance.deckCardData.Count; i++)
+        for (int i = 0; i < DownloadSheets.instance.deckCardData.Count; i++)
         {
-            Employee nextCard = null;
-            if (PhotonNetwork.IsConnected)
+            for (int j = 0; j < 2; j++)
             {
-                nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.employeePrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Employee>();
-                nextCard.pv.RPC("GetDataFile", RpcTarget.All, i);
-            }
-            else
-            {
-                nextCard = Instantiate(CarryVariables.instance.employeePrefab, new Vector3(-10000, -10000), new Quaternion());
-                nextCard.GetDataFile(i);
+                Employee nextCard = null;
+                if (PhotonNetwork.IsConnected)
+                {
+                    nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.employeePrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Employee>();
+                    nextCard.pv.RPC("GetDataFile", RpcTarget.All, i);
+                }
+                else
+                {
+                    nextCard = Instantiate(CarryVariables.instance.employeePrefab, new Vector3(-10000, -10000), new Quaternion());
+                    nextCard.GetDataFile(i);
+                }
             }
         }
         deck.Shuffle();
+        foreach (Player player in playersInOrder)
+        {
+            player.MultiFunction(nameof(player.RequestDraw), RpcTarget.MasterClient, new object[1] { 2 });
+            player.MultiFunction(nameof(player.GainCoin), RpcTarget.All, new object[1] { 5 });
+        }
     }
 
     void CreateActions()
@@ -167,7 +183,6 @@ public class Manager : MonoBehaviour
             }
         }
         deck.Shuffle();
-
     }
 
     #endregion

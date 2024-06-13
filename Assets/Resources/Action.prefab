@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6133385833797075993}
   - component: {fileID: 1352310326918728418}
   - component: {fileID: 4563540877604993386}
+  - component: {fileID: 3959410726379243997}
   m_Layer: 0
   m_Name: Action
   m_TagString: Untagged
@@ -159,7 +160,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pv: {fileID: 0}
-  image: {fileID: 0}
   dataFile:
     cardName: 
     textBox: 
@@ -170,11 +170,27 @@ MonoBehaviour:
     numDraw: 0
     numGain: 0
     numCrowns: 0
+    numPlayCost: 0
     numMisc: 0
     isDirector: 0
     artCredit: 
+    whoToTarget: 
+  button: {fileID: 0}
+  cg: {fileID: 0}
   faceDownSprite: {fileID: 21300000, guid: c85382f08dc8e4d02b5cb721fd5a1c65, type: 3}
   originalSprite: {fileID: 0}
+--- !u!114 &3959410726379243997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1761235060413094877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0126a1609b1248ce829909dda3b6b2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2326203752505220632
 GameObject:
   m_ObjectHideFlags: 0
@@ -641,7 +657,7 @@ GameObject:
   - component: {fileID: 1996018353002914795}
   - component: {fileID: 3484752999118810718}
   m_Layer: 0
-  m_Name: Art
+  m_Name: Art Box
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

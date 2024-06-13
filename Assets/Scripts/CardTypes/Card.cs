@@ -9,31 +9,27 @@ using Photon.Pun;
 using TMPro;
 using System;
 
+[RequireComponent(typeof(CardLayout))]
 [RequireComponent(typeof(PhotonView))]
 public class Card : MonoBehaviour
 {
 
 #region Variables
 
-    public Dictionary<string, MethodInfo> dictionary = new();
+    [Foldout("Misc", true)]
+        [ReadOnly] public PhotonView pv;
+        [ReadOnly] public CardData dataFile;
+        [ReadOnly] public Button button;
 
-    [ReadOnly] public PhotonView pv;
-    [ReadOnly] public Image image;
-    [ReadOnly] public CardData dataFile;
-    [ReadOnly] public Button button;
-    protected CanvasGroup cg;
+    [Foldout("Art", true)]
+        [ReadOnly] public CanvasGroup cg;
+        public Sprite faceDownSprite;
+        [ReadOnly] public Sprite originalSprite;
 
-    protected TMP_Text titleText;
-    protected TMP_Text descriptionText;
-    protected TMP_Text artText;
-    protected TMP_Text coinText;
-    protected TMP_Text crownText;
-
-    public Sprite faceDownSprite;
-    [ReadOnly] public Sprite originalSprite;
-
-    protected bool runNextMethod;
-    protected bool runningMethod;
+    [Foldout("Methods", true)]
+        public Dictionary<string, MethodInfo> dictionary = new();
+        protected bool runNextMethod;
+        protected bool runningMethod;
 
     #endregion
 
@@ -42,7 +38,6 @@ public class Card : MonoBehaviour
     private void Awake()
     {
         button = GetComponent<Button>();
-        image = GetComponent<Image>();
         pv = GetComponent<PhotonView>();
         cg = transform.Find("Canvas Group").GetComponent<CanvasGroup>();
     }
@@ -79,55 +74,31 @@ public class Card : MonoBehaviour
     [PunRPC]
     public virtual void GetDataFile(int fileSlot)
     {
-        titleText.text = dataFile.cardName;
-        descriptionText.text = dataFile.textBox;
-        artText.text = dataFile.artCredit;
-
-        if (dataFile.coinCost < 0)
-            coinText.gameObject.SetActive(false);
-        else
-            coinText.text = $"{dataFile.coinCost} Coin";
-
-        if (dataFile.scoringCrowns < 0)
-            crownText.gameObject.SetActive(false);
-        else
-            crownText.text = $"{dataFile.scoringCrowns} Pos Crown";
-
-        titleText.text = KeywordTooltip.instance.EditText(titleText.text);
-        descriptionText.text = KeywordTooltip.instance.EditText(descriptionText.text);
-        coinText.text = KeywordTooltip.instance.EditText(coinText.text);
-        crownText.text = KeywordTooltip.instance.EditText(crownText.text);
+        this.name = dataFile.cardName;
+        this.gameObject.GetComponent<CardLayout>().FillInCards(this.dataFile, this.originalSprite);
 
         foreach (string nextSection in dataFile.commandInstructions)
         {
-            string[] nextSplit = DownloadSheets.instance.SpliceString(nextSection.Trim(), '/');
-            foreach (string small in nextSplit)
-            {
-                if (small.Equals("None") || small.Equals("") || dictionary.ContainsKey(small))
-                    continue;
+            if (nextSection.Equals("None") || nextSection.Equals("") || dictionary.ContainsKey(nextSection))
+                continue;
 
-                MethodInfo method = typeof(Card).GetMethod(small, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                if (method != null && method.ReturnType == typeof(IEnumerator))
-                    dictionary.Add(small, method);
-                else
-                    Debug.LogError($"{dataFile.cardName}: instructions: {small} doesn't exist");
-            }
+            MethodInfo method = typeof(Card).GetMethod(nextSection, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (method != null && method.ReturnType == typeof(IEnumerator))
+                dictionary.Add(nextSection, method);
+            else
+                Debug.LogError($"{dataFile.cardName}: instructions: {nextSection} doesn't exist");
         }
 
         foreach (string nextSection in dataFile.replaceInstructions)
         {
-            string[] nextSplit = DownloadSheets.instance.SpliceString(nextSection.Trim(), '/');
-            foreach (string small in nextSplit)
-            {
-                if (small.Equals("None") || small.Equals("") || dictionary.ContainsKey(small))
-                    continue;
+            if (nextSection.Equals("None") || nextSection.Equals("") || dictionary.ContainsKey(nextSection))
+                continue;
 
-                MethodInfo method = typeof(Card).GetMethod(small, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                if (method != null && method.ReturnType == typeof(IEnumerator))
-                    dictionary.Add(small, method);
-                else
-                    Debug.LogError($"{dataFile.cardName}: instructions: {small} doesn't exist");
-            }
+            MethodInfo method = typeof(Card).GetMethod(nextSection, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (method != null && method.ReturnType == typeof(IEnumerator))
+                dictionary.Add(nextSection, method);
+            else
+                Debug.LogError($"{dataFile.cardName}: instructions: {nextSection} doesn't exist");
         }
     }
 
@@ -155,9 +126,8 @@ public class Card : MonoBehaviour
 
     public IEnumerator RevealCard(float totalTime)
     {
-        if (image.sprite == faceDownSprite)
+        if (cg.alpha == 0)
         {
-            cg.alpha = 0;
             transform.localEulerAngles = new Vector3(0, 0, 0);
             float elapsedTime = 0f;
 
@@ -172,8 +142,6 @@ public class Card : MonoBehaviour
             }
 
             cg.alpha = 1;
-            image.sprite = null;
-            image.color = Color.black;
             elapsedTime = 0f;
 
             while (elapsedTime < totalTime)
@@ -186,8 +154,6 @@ public class Card : MonoBehaviour
             this.transform.localEulerAngles = originalRot;
         }
     }
-
-
 
     #endregion
 
@@ -233,7 +199,7 @@ public class Card : MonoBehaviour
             }
             else
             {
-                int playerTracker = player.playerPosiiton;
+                int playerTracker = player.playerPosition;
                 for (int j = 0; j<Manager.instance.playersInOrder.Count; j++)
                 {
                     runningMethod = true;

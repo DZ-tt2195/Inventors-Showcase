@@ -7,7 +7,6 @@ using UnityEngine.Networking;
 using System.IO;
 using System;
 using System.Text.RegularExpressions;
-using Photon.Pun.Demo.SlotRacer.Utils;
 
 [Serializable]
 public class CardData
@@ -127,6 +126,7 @@ public class DownloadSheets : MonoBehaviour
             if (!cardSheetsColumns.ContainsKey(next))
             {
                 cardSheetsColumns.Add(next, i);
+                //Debug.Log($"{next}, {i}");
             }
         }
 
@@ -144,10 +144,10 @@ public class DownloadSheets : MonoBehaviour
             nextData.scoringCrowns = StringToInt(data[i][cardSheetsColumns[nameof(CardData.scoringCrowns)]]);
 
             string nextRow = data[i][cardSheetsColumns[nameof(CardData.commandInstructions)]];
-            nextData.commandInstructions = (nextRow == "") ? new string[1] { "NONE" } : SpliceString(nextRow, '-');
+            nextData.commandInstructions = (nextRow == "") ? new string[1] { "None" } : SpliceString(nextRow, '-');
 
             nextRow = data[i][cardSheetsColumns[nameof(CardData.replaceInstructions)]];
-            nextData.replaceInstructions = (nextRow == "") ? new string[1] { "NONE" } : SpliceString(nextRow, '-');
+            nextData.replaceInstructions = (nextRow == "") ? new string[1] { "None" } : SpliceString(nextRow, '-');
 
             nextData.numDraw = StringToInt(data[i][cardSheetsColumns[nameof(CardData.numDraw)]]);
             nextData.numGain = StringToInt(data[i][cardSheetsColumns[nameof(CardData.numGain)]]);
@@ -155,7 +155,7 @@ public class DownloadSheets : MonoBehaviour
             nextData.numPlayCost = StringToInt(data[i][cardSheetsColumns[nameof(CardData.numPlayCost)]]);
             nextData.numMisc = StringToInt(data[i][cardSheetsColumns[nameof(CardData.numMisc)]]);
 
-            nextData.isDirector = data[i][cardSheetsColumns[nameof(CardData.numMisc)]] == "TRUE";
+            nextData.isDirector = data[i][cardSheetsColumns[nameof(CardData.isDirector)]] == "TRUE";
             nextData.artCredit = data[i][cardSheetsColumns[nameof(CardData.artCredit)]];
 
             string[] listOfTargets = (data[i][cardSheetsColumns[nameof(CardData.whoToTarget)]].Equals("") ? new string[1] { "None" } : SpliceString(data[i][cardSheetsColumns[nameof(CardData.whoToTarget)]].Trim().ToUpper(), '-'));
@@ -190,7 +190,7 @@ public class DownloadSheets : MonoBehaviour
         line = line.Trim();
         try
         {
-            return (line.Equals("")) ? 0 : int.Parse(line);
+            return (line.Equals("")) ? -1 : int.Parse(line);
         }
         catch (FormatException)
         {

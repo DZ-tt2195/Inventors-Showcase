@@ -17,24 +17,25 @@ public class Player : MonoBehaviour
 
 #region Variables
 
-    [ReadOnly] public PhotonView pv;
-    Canvas canvas;
+    [Foldout("Misc", true)]
+        [ReadOnly] public PhotonView pv;
+        Canvas canvas;
+        public int coins;
+        public int negCrowns;
+        bool myTurn;
+        [ReadOnly] public int playerPosition;
 
-    [ReadOnly] public List<Card> listOfHand = new List<Card>();
-    [SerializeField] Transform cardhand;
-    [ReadOnly] public List<Card> listOfPlay = new List<Card>();
-    [SerializeField] Transform cardplay;
+    [Foldout("Lists", true)]
+        [ReadOnly] public List<Card> listOfHand = new List<Card>();
+        [SerializeField] Transform cardhand;
+        [ReadOnly] public List<Card> listOfPlay = new List<Card>();
+        [SerializeField] Transform cardplay;
+        public Dictionary<string, MethodInfo> dictionary = new();
+        [ReadOnly] public List<Card> cardsPlayed = new();
 
-    public int coins;
-    public int negCrowns;
-
-    public Dictionary<string, MethodInfo> dictionary = new();
-    bool myTurn;
-    [ReadOnly] public int playerPosiiton;
-
-    protected int choice;
-    protected Card chosenCard;
-    [ReadOnly] public List<Card> cardsPlayed = new();
+    [Foldout("Choices", true)]
+        protected int choice;
+        protected Card chosenCard;
 
     #endregion
 
@@ -86,8 +87,9 @@ public class Player : MonoBehaviour
 
     internal void AssignInfo(int position)
     {
-        this.playerPosiiton = position;
-        this.transform.localPosition = new Vector3(-280 + 2500 * this.playerPosiiton, 0, 0);
+        this.playerPosition = position;
+        this.transform.SetParent(GameObject.Find("Store Players").transform);
+        this.transform.localPosition = new Vector3(-280 + 2500 * this.playerPosition, 0, 0);
     }
 
 #endregion
@@ -149,9 +151,10 @@ public class Player : MonoBehaviour
             Card newCard = listOfCards[i];
             newCard.transform.SetParent(this.cardhand);
             newCard.transform.localPosition = new Vector2(0, -1100);
+            newCard.cg.alpha = 0;
             listOfHand.Add(newCard);
 
-            if (this.pv.AmOwner)
+            if (!PhotonNetwork.IsConnected || this.pv.AmOwner)
             {
                 Log.instance.AddText($"{this.name} draws {newCard.name}.");
                 StartCoroutine(newCard.RevealCard(0.3f));
@@ -160,8 +163,6 @@ public class Player : MonoBehaviour
             {
                 Log.instance.AddText($"{this.name} draws a card.");
             }
-
-            newCard.image.sprite = (this.pv.AmOwner) ? newCard.originalSprite : newCard.faceDownSprite;
         }
         SortHand();
     }

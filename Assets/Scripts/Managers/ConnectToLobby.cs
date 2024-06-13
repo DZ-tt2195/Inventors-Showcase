@@ -17,6 +17,7 @@ public class ConnectToLobby : MonoBehaviourPunCallbacks
 
     void LocalPlay()
     {
+        Debug.Log("press local play");
         SceneManager.LoadScene("2. Game");
     }
 
@@ -34,6 +35,7 @@ public class ConnectToLobby : MonoBehaviourPunCallbacks
 
     public override void OnJoinedLobby()
     {
+        Debug.Log("press online play");
         SceneManager.LoadScene("1. Lobby");
     }
 }

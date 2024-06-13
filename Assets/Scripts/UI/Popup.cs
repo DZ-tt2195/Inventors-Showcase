@@ -18,6 +18,7 @@ public class Popup : MonoBehaviour
     [SerializeField] Button cardButton;
     List<Button> buttonsInCollector = new List<Button>();
     [ReadOnly] public int chosenButton = -1;
+    [ReadOnly] public Card chosenCard = null;
 
     void Awake()
     {
@@ -28,7 +29,7 @@ public class Popup : MonoBehaviour
 
     internal void StatsSetup(string header, Vector2 position)
     {
-        this.textbox.text = /*KeywordTooltip.instance.EditText*/(header);
+        this.textbox.text = KeywordTooltip.instance.EditText(header);
         this.transform.SetParent(canvas.transform);
         this.transform.localPosition = position;
         this.transform.localScale = new Vector3(1, 1, 1);
@@ -51,7 +52,7 @@ public class Popup : MonoBehaviour
 
         nextButton.interactable = true;
         int buttonNumber = buttonsInCollector.Count;
-        nextButton.onClick.AddListener(() => ReceiveChoice(buttonNumber));
+        nextButton.onClick.AddListener(() => ReceiveChoice(buttonNumber, null));
         buttonsInCollector.Add(nextButton);
 
         imageWidth.sizeDelta = new Vector2(Mathf.Max(buttonsInCollector.Count, 2) * 375, imageWidth.sizeDelta.y);
@@ -64,14 +65,16 @@ public class Popup : MonoBehaviour
         }
     }
 
-    internal void AddCardButton(Card card)
+    internal void AddCardButton(Card card, float alpha)
     {
         Button nextButton = Instantiate(cardButton, this.transform.GetChild(1));
-        //nextButton.transform.GetChild(0).GetComponent<TMP_Text>().text = text;
+        CardLayout layout = nextButton.GetComponent<CardLayout>();
+        layout.FillInCards(card.dataFile, card.originalSprite);
+        layout.cg.alpha = alpha;
 
         nextButton.interactable = true;
         int buttonNumber = buttonsInCollector.Count;
-        nextButton.onClick.AddListener(() => ReceiveChoice(buttonNumber));
+        nextButton.onClick.AddListener(() => ReceiveChoice(buttonNumber, card));
         buttonsInCollector.Add(nextButton);
 
         imageWidth.sizeDelta = new Vector2(Mathf.Max(buttonsInCollector.Count, 2) * 375, imageWidth.sizeDelta.y);
@@ -84,9 +87,10 @@ public class Popup : MonoBehaviour
         }
     }
 
-    void ReceiveChoice(int buttonNumber)
+    void ReceiveChoice(int buttonNumber, Card card)
     {
         chosenButton = buttonNumber;
+        chosenCard = card;
     }
 
     internal void DisableAll()
