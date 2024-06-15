@@ -76,12 +76,15 @@ MonoBehaviour:
   pv: {fileID: 0}
   coins: 0
   negCrowns: 0
-  playerPosiiton: 0
+  playerPosition: 0
+  dudPrefab: {fileID: 1697648877009758180, guid: a669408eef67e48a287e8b14ef4d79d1, type: 3}
   listOfHand: []
   cardhand: {fileID: 1525575952823927673}
   listOfPlay: []
   cardplay: {fileID: 5339597759091133530}
   cardsPlayed: []
+  choice: 0
+  chosenCard: {fileID: 0}
 --- !u!1 &6326756469621649633
 GameObject:
   m_ObjectHideFlags: 0

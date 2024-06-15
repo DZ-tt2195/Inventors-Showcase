@@ -33,6 +33,7 @@ public class Manager : MonoBehaviour
 
     [Foldout("Lists", true)]
     [ReadOnly] public List<Player> playersInOrder = new();
+    [ReadOnly] public List<Action> listOfActions = new();
     [ReadOnly] public Dictionary<string, MethodInfo> dictionary = new();
 
     #endregion
@@ -98,6 +99,7 @@ public class Manager : MonoBehaviour
             GetPlayers();
             CreateEmployees();
             CreateActions();
+            StartCoroutine(PlayUntilFinish());
         }
     }
 
@@ -115,6 +117,7 @@ public class Manager : MonoBehaviour
             GetPlayers();
             CreateEmployees();
             CreateActions();
+            StartCoroutine(PlayUntilFinish());
         }
     }
 
@@ -192,14 +195,15 @@ public class Manager : MonoBehaviour
     IEnumerator PlayUntilFinish()
     {
         gameOn = true;
-        yield return null;
 
-        for (int i = 0; i < playersInOrder.Count; i++)
+        for (int j = 0; j < 10; j++)
         {
-            yield return playersInOrder[i].TakeTurnRPC();
-            yield return new WaitForSeconds(0.25f);
+            foreach (Player player in playersInOrder)
+            {
+                yield return player.TakeTurnRPC();
+                yield return new WaitForSeconds(0.25f);
+            }
         }
-
     }
 
     #endregion

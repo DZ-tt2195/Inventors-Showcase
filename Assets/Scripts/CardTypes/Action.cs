@@ -10,6 +10,7 @@ public class Action : Card
     {
         this.dataFile = DownloadSheets.instance.mainActionData[fileSlot];
         this.transform.SetParent(Manager.instance.actions);
+        Manager.instance.listOfActions.Add(this);
         this.originalSprite = Resources.Load<Sprite>($"Action/{this.dataFile.cardName}");
         base.GetDataFile(fileSlot);
     }

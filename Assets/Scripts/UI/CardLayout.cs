@@ -20,20 +20,18 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
     private void Awake()
     {
         cg = transform.Find("Canvas Group").GetComponent<CanvasGroup>();
-        titleText = cg.transform.Find("Title").GetComponent<TMP_Text>();
         try
         {
+            titleText = cg.transform.Find("Title").GetComponent<TMP_Text>();
             coinText = cg.transform.Find("Coin").GetComponent<TMP_Text>();
             crownText = cg.transform.Find("Crown").GetComponent<TMP_Text>();
+            descriptionText = cg.transform.Find("Description").GetComponent<TMP_Text>();
+            artBox = cg.transform.Find("Art Box").GetComponent<Image>();
+            artText = cg.transform.Find("Art Credit").GetComponent<TMP_Text>();
         }
         catch
         {
-            coinText = null;
-            crownText = null;
         }
-        descriptionText = cg.transform.Find("Description").GetComponent<TMP_Text>();
-        artBox = cg.transform.Find("Art Box").GetComponent<Image>();
-        artText = cg.transform.Find("Art Credit").GetComponent<TMP_Text>();
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -47,16 +45,17 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
     public void FillInCards(CardData dataFile, Sprite sprite)
     {
         this.dataFile = dataFile;
-        titleText.text = dataFile.cardName;
-        descriptionText.text = dataFile.textBox;
-        titleText.text = KeywordTooltip.instance.EditText(titleText.text);
-        descriptionText.text = KeywordTooltip.instance.EditText(descriptionText.text);
-
-        artText.text = dataFile.artCredit;
-        artBox.sprite = sprite;
 
         try
         {
+            titleText.text = dataFile.cardName;
+            descriptionText.text = dataFile.textBox;
+            titleText.text = KeywordTooltip.instance.EditText(titleText.text);
+            descriptionText.text = KeywordTooltip.instance.EditText(descriptionText.text);
+
+            artText.text = dataFile.artCredit;
+            artBox.sprite = sprite;
+
             coinText.text = $"{dataFile.coinCost} Coin";
             crownText.text = $"{dataFile.scoringCrowns} Pos Crown";
             coinText.text = KeywordTooltip.instance.EditText(coinText.text);
@@ -70,6 +69,6 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
 
     void RightClickInfo()
     {
-        CarryVariables.instance.RightClickDisplay(cg.alpha, artBox.sprite, this.dataFile);
+        CarryVariables.instance.RightClickDisplay(cg.alpha, (artBox != null) ? artBox.sprite : null, this.dataFile);
     }
 }

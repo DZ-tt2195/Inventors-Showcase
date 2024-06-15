@@ -9,7 +9,6 @@ using Photon.Pun;
 using TMPro;
 using System;
 
-[RequireComponent(typeof(CardLayout))]
 [RequireComponent(typeof(PhotonView))]
 public class Card : MonoBehaviour
 {
@@ -18,7 +17,7 @@ public class Card : MonoBehaviour
 
     [Foldout("Misc", true)]
         [ReadOnly] public PhotonView pv;
-        [ReadOnly] public CardData dataFile;
+        public CardData dataFile;
         [ReadOnly] public Button button;
 
     [Foldout("Art", true)]
@@ -77,32 +76,30 @@ public class Card : MonoBehaviour
         this.name = dataFile.cardName;
         this.gameObject.GetComponent<CardLayout>().FillInCards(this.dataFile, this.originalSprite);
 
-        foreach (string nextSection in dataFile.commandInstructions)
+        GetMethods(dataFile.commandInstructions);
+        GetMethods(dataFile.replaceInstructions);
+    }
+
+    void GetMethods(string[] listOfInstructions)
+    {
+        foreach (string nextSection in listOfInstructions)
         {
-            if (nextSection.Equals("None") || nextSection.Equals("") || dictionary.ContainsKey(nextSection))
-                continue;
+            string[] nextSplit = DownloadSheets.instance.SpliceString(nextSection.Trim(), '/');
+            foreach (string small in nextSplit)
+            {
+                if (small.Equals("None") || small.Equals("") || dictionary.ContainsKey(small))
+                    continue;
 
-            MethodInfo method = typeof(Card).GetMethod(nextSection, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            if (method != null && method.ReturnType == typeof(IEnumerator))
-                dictionary.Add(nextSection, method);
-            else
-                Debug.LogError($"{dataFile.cardName}: instructions: {nextSection} doesn't exist");
-        }
-
-        foreach (string nextSection in dataFile.replaceInstructions)
-        {
-            if (nextSection.Equals("None") || nextSection.Equals("") || dictionary.ContainsKey(nextSection))
-                continue;
-
-            MethodInfo method = typeof(Card).GetMethod(nextSection, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            if (method != null && method.ReturnType == typeof(IEnumerator))
-                dictionary.Add(nextSection, method);
-            else
-                Debug.LogError($"{dataFile.cardName}: instructions: {nextSection} doesn't exist");
+                MethodInfo method = typeof(Card).GetMethod(small, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (method != null && method.ReturnType == typeof(IEnumerator))
+                    dictionary.Add(small, method);
+                else
+                    Debug.LogError($"{dataFile.cardName}: instructions: {small} doesn't exist");
+            }
         }
     }
 
-#endregion
+    #endregion
 
 #region Animations
 
@@ -161,56 +158,53 @@ public class Card : MonoBehaviour
 
     public IEnumerator CommandInstructions(Player player, int logged = -1)
     {
-        runNextMethod = true;
-        for (int i = 0; i < dataFile.commandInstructions.Count(); i++)
-        {
-            string methodName = dataFile.commandInstructions[i];
-
-            if (methodName.Equals("None") || methodName.Equals(""))
-                continue;
-
-            runningMethod = true;
-            StartCoroutine((IEnumerator)dictionary[methodName].Invoke(this, new object[2] { player, logged }));
-
-            while (runningMethod)
-                yield return null;
-            if (!runNextMethod) break;
-        }
+        yield return ResolveInstructions(dataFile.commandInstructions, player, logged);
     }
 
-    public IEnumerator ReplaceInstructions(Player player, int logged)
+    public IEnumerator ReplaceInstructions(Player player, int logged = -1)
+    {
+        yield return ResolveInstructions(dataFile.replaceInstructions, player, logged);
+    }
+
+    IEnumerator ResolveInstructions(string[] listOfInstructions, Player player, int logged = -1)
     {
         runNextMethod = true;
-        for (int i = 0; i < dataFile.replaceInstructions.Count(); i++)
+        for (int i = 0; i < listOfInstructions.Count(); i++)
         {
-            string methodName = dataFile.replaceInstructions[i];
-
-            if (methodName.Equals("None") || methodName.Equals(""))
-                continue;
+            string nextPart = listOfInstructions[i];
+            string[] listOfSmallInstructions = DownloadSheets.instance.SpliceString(nextPart, '/');
 
             if (dataFile.whoToTarget[i] == PlayerTarget.You)
             {
                 runningMethod = true;
-                StartCoroutine((IEnumerator)dictionary[methodName].Invoke(this, new object[2] { player, logged }));
+                foreach (string methodName in listOfSmallInstructions)
+                {
+                    runningMethod = true;
+                    StartCoroutine((IEnumerator)dictionary[methodName].Invoke(this, new object[2] { player, logged }));
 
-                while (runningMethod)
-                    yield return null;
-                if (!runNextMethod) break;
+                    while (runningMethod)
+                        yield return null;
+                    if (!runNextMethod) break;
+                }
             }
             else
             {
                 int playerTracker = player.playerPosition;
-                for (int j = 0; j<Manager.instance.playersInOrder.Count; j++)
+                for (int j = 0; j < Manager.instance.playersInOrder.Count; j++)
                 {
-                    runningMethod = true;
                     Player nextPlayer = Manager.instance.playersInOrder[playerTracker];
 
                     if (dataFile.whoToTarget[i] == PlayerTarget.Others && player == nextPlayer)
                         continue;
 
-                    StartCoroutine((IEnumerator)dictionary[methodName].Invoke(this, new object[2] { nextPlayer, logged }));
-                    while (runningMethod)
-                        yield return null;
+                    foreach (string methodName in listOfSmallInstructions)
+                    {
+                        runningMethod = true;
+                        StartCoroutine((IEnumerator)dictionary[methodName].Invoke(this, new object[2] { nextPlayer, logged }));
+                        while (runningMethod)
+                            yield return null;
+                    }
+
                     playerTracker = (playerTracker == Manager.instance.playersInOrder.Count - 1) ? 0 : playerTracker + 1;
                 }
             }
@@ -265,6 +259,23 @@ public class Card : MonoBehaviour
         yield return player.ChooseCardToPlay(player.listOfHand.Where(
             card => card.dataFile.coinCost <= player.coins && card.dataFile.coinCost <= card.dataFile.numPlayCost).
             ToList(), true);
+        runningMethod = false;
+    }
+
+    IEnumerator MandatoryDiscard(Player player, int logged)
+    {
+        for (int i = 0; i<dataFile.numDraw; i++)
+        {
+            yield return player.ChooseCard(player.listOfHand, false);
+            player.DiscardRPC(player.chosenCard);
+        }
+    }
+
+    IEnumerator MoneyOrLess(Player player, int logged)
+    {
+        yield return null;
+        if (!(player.coins <= dataFile.numMisc))
+            runNextMethod = false;
         runningMethod = false;
     }
 

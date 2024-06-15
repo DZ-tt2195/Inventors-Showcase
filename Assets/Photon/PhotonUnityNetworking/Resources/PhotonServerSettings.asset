@@ -53,6 +53,8 @@ MonoBehaviour:
   - RemoveNegCrown
   - TakeNegCrown
   - AddToPlay
+  - CreateDud
+  - CreateDudRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 0

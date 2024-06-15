@@ -190,7 +190,7 @@ public class DownloadSheets : MonoBehaviour
         line = line.Trim();
         try
         {
-            return (line.Equals("")) ? -1 : int.Parse(line);
+            return (line.Equals("")) ? 0 : int.Parse(line);
         }
         catch (FormatException)
         {
