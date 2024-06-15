@@ -17,6 +17,10 @@ public class Player : MonoBehaviour
 
 #region Variables
 
+    [Foldout("Prefabs", true)]
+        [SerializeField] Card dudPrefab;
+        [SerializeField] Button playerButtonPrefab;
+
     [Foldout("Misc", true)]
         [ReadOnly] public PhotonView pv;
         Canvas canvas;
@@ -24,17 +28,18 @@ public class Player : MonoBehaviour
         [ReadOnly] public int negCrowns;
         bool myTurn;
         [ReadOnly] public int playerPosition;
-        [SerializeField] Card dudPrefab;
 
-    [Foldout("Lists", true)]
+    [Foldout("UI", true)]
         [ReadOnly] public List<Card> listOfHand = new List<Card>();
         [SerializeField] Transform cardhand;
         [ReadOnly] public List<Card> listOfPlay = new List<Card>();
         [SerializeField] Transform cardplay;
-        public Dictionary<string, MethodInfo> dictionary = new();
         [ReadOnly] public List<Card> cardsPlayed = new();
+        TMP_Text buttonText;
+        Transform storePlayers;
 
     [Foldout("Choices", true)]
+        public Dictionary<string, MethodInfo> dictionary = new();
         [ReadOnly] public int choice;
         [ReadOnly] public Card chosenCard;
 
@@ -89,11 +94,36 @@ public class Player : MonoBehaviour
     internal void AssignInfo(int position)
     {
         this.playerPosition = position;
-        this.transform.SetParent(GameObject.Find("Store Players").transform);
+        storePlayers = GameObject.Find("Store Players").transform;
+        this.transform.SetParent(storePlayers);
         this.transform.localPosition = new Vector3(-280 + 2500 * this.playerPosition, 0, 0);
 
-        Invoke(nameof(CreateDudRPC), 0.5f);
-        Invoke(nameof(CreateDudRPC), 0.5f);
+        Button newButton = Instantiate(playerButtonPrefab, Vector3.zero, new Quaternion());
+        newButton.transform.SetParent(this.transform.parent.parent);
+        newButton.transform.localPosition = new(-1100, 400 - (200 * playerPosition));
+        buttonText = newButton.transform.GetChild(0).GetComponent<TMP_Text>();
+        newButton.onClick.AddListener(MoveScreen);
+
+        if (!PhotonNetwork.IsConnected || pv.IsMine)
+        {
+            Invoke(nameof(CreateDudRPC), 0.5f);
+            Invoke(nameof(CreateDudRPC), 0.5f);
+        }
+    }
+
+    [PunRPC]
+    void UpdateButton()
+    {
+        if (buttonText != null)
+        {
+            buttonText.text = $"{this.name}\n{listOfHand.Count} Card, {coins} Coin, -{negCrowns} Neg Crown";
+            buttonText.text = KeywordTooltip.instance.EditText(buttonText.text);
+        }
+    }
+
+    void MoveScreen()
+    {
+        storePlayers.localPosition = new Vector3(-2500 * this.playerPosition, 0, 0);
     }
 
     #endregion
@@ -190,6 +220,7 @@ public class Player : MonoBehaviour
     {
         float firstCalc = Mathf.Round(canvas.transform.localScale.x * 4) / 4f;
         float multiplier = firstCalc / 0.25f;
+        UpdateButton();
 
         for (int i = 0; i < listOfHand.Count; i++)
         {
@@ -200,10 +231,11 @@ public class Player : MonoBehaviour
             StartCoroutine(nextCard.MoveCard(newPosition, nextCard.transform.localEulerAngles, 0.3f));
         }
 
-        foreach (Card card in listOfHand)
-            StartCoroutine(card.RevealCard(0.3f));
-
-        //pv.RPC("UpdateMyText", RpcTarget.All, listOfHand.Count);
+        if (!PhotonNetwork.IsConnected || this.pv.AmOwner)
+        {
+            foreach (Card card in listOfHand)
+                StartCoroutine(card.RevealCard(0.3f));
+        }
     }
 
     #endregion
@@ -214,14 +246,14 @@ public class Player : MonoBehaviour
     {
         float firstCalc = Mathf.Round(canvas.transform.localScale.x * 4) / 4f;
         float multiplier = firstCalc / 0.25f;
-        Debug.Log(multiplier);
+        UpdateButton();
 
         for (int i = 0; i<6; i++)
         {
             try
             {
                 Card nextCard = listOfPlay[i];
-                Vector2 newPosition = new(-750 + (75 * multiplier * i), 300 * canvas.transform.localScale.x);
+                Vector2 newPosition = new(-500 + (62.5f * multiplier * i), 300 * canvas.transform.localScale.x);
                 StartCoroutine(nextCard.MoveCard(newPosition, nextCard.transform.localEulerAngles, 0.3f));
             }
             catch
@@ -235,7 +267,7 @@ public class Player : MonoBehaviour
             {
                 Card nextCard = listOfPlay[i+6];
                 float xPosition = -750 + (300 * multiplier * i);
-                Vector2 newPosition = new(-750 + (300 * multiplier * i), -90 * canvas.transform.localScale.x);
+                Vector2 newPosition = new(-500 + (62.5f * multiplier * i), -90 * canvas.transform.localScale.x);
                 StartCoroutine(nextCard.MoveCard(newPosition, nextCard.transform.localEulerAngles, 0.3f));
             }
             catch
@@ -310,27 +342,31 @@ public class Player : MonoBehaviour
     public void GainCoin(int coins)
     {
         this.coins += coins;
+        UpdateButton();
     }
 
     [PunRPC]
     public void LoseCoin(int coins)
     {
         this.coins = Mathf.Max(this.coins - coins, 0);
+        UpdateButton();
     }
 
     [PunRPC]
     public void TakeNegCrown(int crowns)
     {
         this.negCrowns += crowns;
+        UpdateButton();
     }
 
     [PunRPC]
     public void RemoveNegCrown(int crowns)
     {
         this.negCrowns = Mathf.Max(this.negCrowns - crowns, 0);
+        UpdateButton();
     }
 
-#endregion
+    #endregion
 
 #region Turn
 

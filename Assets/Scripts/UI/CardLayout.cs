@@ -23,11 +23,11 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
         try
         {
             titleText = cg.transform.Find("Title").GetComponent<TMP_Text>();
-            coinText = cg.transform.Find("Coin").GetComponent<TMP_Text>();
-            crownText = cg.transform.Find("Crown").GetComponent<TMP_Text>();
             descriptionText = cg.transform.Find("Description").GetComponent<TMP_Text>();
             artBox = cg.transform.Find("Art Box").GetComponent<Image>();
             artText = cg.transform.Find("Art Credit").GetComponent<TMP_Text>();
+            coinText = cg.transform.Find("Coin").GetComponent<TMP_Text>();
+            crownText = cg.transform.Find("Crown").GetComponent<TMP_Text>();
         }
         catch
         {
@@ -46,24 +46,39 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
     {
         this.dataFile = dataFile;
 
-        try
+        titleText.text = dataFile.cardName;
+        descriptionText.text = dataFile.textBox;
+        descriptionText.text = KeywordTooltip.instance.EditText(descriptionText.text);
+
+        artText.text = dataFile.artCredit;
+        artBox.sprite = sprite;
+
+        if (coinText != null)
         {
-            titleText.text = dataFile.cardName;
-            descriptionText.text = dataFile.textBox;
-            titleText.text = KeywordTooltip.instance.EditText(titleText.text);
-            descriptionText.text = KeywordTooltip.instance.EditText(descriptionText.text);
-
-            artText.text = dataFile.artCredit;
-            artBox.sprite = sprite;
-
-            coinText.text = $"{dataFile.coinCost} Coin";
-            crownText.text = $"{dataFile.scoringCrowns} Pos Crown";
-            coinText.text = KeywordTooltip.instance.EditText(coinText.text);
-            crownText.text = KeywordTooltip.instance.EditText(crownText.text);
+            if (dataFile.coinCost >= 0)
+            {
+                coinText.gameObject.SetActive(true);
+                coinText.text = $"{dataFile.coinCost} Coin";
+                coinText.text = KeywordTooltip.instance.EditText(coinText.text);
+            }
+            else
+            {
+                coinText.gameObject.SetActive(false);
+            }
         }
-        catch
+
+        if (crownText != null)
         {
-            //do nothing
+            if (dataFile.scoringCrowns >= 0)
+            {
+                crownText.gameObject.SetActive(true);
+                crownText.text = $"{dataFile.scoringCrowns} Pos Crown";
+                crownText.text = KeywordTooltip.instance.EditText(crownText.text);
+            }
+            else
+            {
+                crownText.gameObject.SetActive(false);
+            }
         }
     }
 

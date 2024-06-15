@@ -275,8 +275,9 @@ MonoBehaviour:
   actions: {fileID: 1689440781}
   opacity: 1
   decrease: 1
-  gameon: 0
+  gameOn: 0
   playersInOrder: []
+  listOfActions: []
 --- !u!4 &204503846
 Transform:
   m_ObjectHideFlags: 0
@@ -1545,6 +1546,6 @@ SceneRoots:
   - {fileID: 204503846}
   - {fileID: 270349799}
   - {fileID: 1127216486}
+  - {fileID: 1689440781}
   - {fileID: 1133070778}
   - {fileID: 369914992}
-  - {fileID: 1689440781}
