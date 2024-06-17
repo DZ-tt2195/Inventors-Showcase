@@ -72,22 +72,7 @@ public class Log : MonoBehaviour
             newText.text += "     ";
         newText.text += string.IsNullOrEmpty(logText) ? "" : char.ToUpper(logText[0]) + logText[1..];
 
-        /*
-        foreach (Character teammate in TurnManager.instance.listOfPlayers)
-        {
-            string escapedName = Regex.Escape(teammate.name);
-            string pattern = $@"\b{escapedName}(?=\W!$)";
-            newText.text = Regex.Replace(newText.text, pattern, $"<color=#00FF00>{teammate.name}</color>");
-        }
-        foreach (Character enemy in TurnManager.instance.listOfEnemies)
-        {
-            string escapedName = Regex.Escape(enemy.name);
-            string pattern = $@"\b{escapedName}(?=\W!$)";
-            newText.text = Regex.Replace(newText.text, pattern, $"<color=#FF0000>{enemy.name}</color>");
-        }
-        */
-
-        //newText.text = KeywordTooltip.instance.EditText(newText.text);
+        newText.text = KeywordTooltip.instance.EditText(newText.text);
 
         if (RT.transform.childCount >= (startingHeight / gridGroup.cellSize.y)-1)
         {

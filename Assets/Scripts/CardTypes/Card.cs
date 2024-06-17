@@ -24,6 +24,7 @@ public class Card : MonoBehaviour
         [ReadOnly] public CanvasGroup cg;
         public Sprite faceDownSprite;
         [ReadOnly] public Sprite originalSprite;
+        public Image border;
 
     [Foldout("Methods", true)]
         public Dictionary<string, MethodInfo> dictionary = new();
@@ -152,6 +153,11 @@ public class Card : MonoBehaviour
         }
     }
 
+    private void FixedUpdate()
+    {
+        this.border.SetAlpha(Manager.instance.opacity);
+    }
+
     #endregion
 
 #region Instructions
@@ -262,13 +268,43 @@ public class Card : MonoBehaviour
         runningMethod = false;
     }
 
+    IEnumerator DiscardHand(Player player, int logged)
+    {
+        yield return null;
+        foreach (Card card in player.listOfHand)
+            player.DiscardRPC(card);
+        runningMethod = false;
+    }
+
     IEnumerator MandatoryDiscard(Player player, int logged)
     {
         for (int i = 0; i<dataFile.numDraw; i++)
         {
+            Manager.instance.instructions.text = $"Discard a card ({dataFile.numDraw-i} more).";
             yield return player.ChooseCard(player.listOfHand, false);
             player.DiscardRPC(player.chosenCard);
         }
+        runningMethod = false;
+    }
+
+    IEnumerator OptionalDiscard(Player player, int logged)
+    {
+        for (int i = 0; i < dataFile.numDraw; i++)
+        {
+            Manager.instance.instructions.text = $"Discard a card ({dataFile.numDraw - i} more)?";
+            yield return player.ChooseCard(player.listOfHand, i == 0);
+
+            if (player.chosenCard == null)
+            {
+                runNextMethod = false;
+                break;
+            }
+            else
+            {
+                player.DiscardRPC(player.chosenCard);
+            }
+        }
+        runningMethod = false;
     }
 
     IEnumerator MoneyOrLess(Player player, int logged)

@@ -106,8 +106,9 @@ public class Player : MonoBehaviour
 
         if (!PhotonNetwork.IsConnected || pv.IsMine)
         {
-            Invoke(nameof(CreateDudRPC), 0.5f);
-            Invoke(nameof(CreateDudRPC), 0.5f);
+            Invoke(nameof(CreateDudRPC), 0.25f);
+            Invoke(nameof(CreateDudRPC), 0.25f);
+            MoveScreen();
         }
     }
 
@@ -210,7 +211,7 @@ public class Player : MonoBehaviour
             }
             else
             {
-                Log.instance.AddText($"{this.name} draws a card.");
+                Log.instance.AddText($"{this.name} draws 1 Card.");
             }
         }
         SortHand();
@@ -282,24 +283,38 @@ public class Player : MonoBehaviour
 
     public IEnumerator ChooseCardToPlay(List<Card> cardsToPlay, bool replace)
     {
-        //List<Card> cardsToPlay = listOfHand.Where(card => card.dataFile.coinCost <= coins).ToList();
+        if ((replace && listOfPlay.Count == 0) || cardsToPlay.Count == 0)
+            yield break;
+
+        Manager.instance.instructions.text = "Choose a card to play.";
         yield return ChooseCard(cardsToPlay, true);
 
         if (chosenCard != null)
         {
+            Card cardToPlay = chosenCard;
             if (replace)
             {
-
+                Manager.instance.instructions.text = "Choose a card to replace.";
+                yield return ChooseCard(listOfPlay, false);
+                Card cardToDiscard = chosenCard;
+                DiscardRPC(cardToDiscard);
+                yield return cardToDiscard.ReplaceInstructions(this);
             }
 
-            MultiFunction(nameof(AddToPlay), RpcTarget.All, new object[1] { chosenCard.pv.ViewID });
+            if (PhotonNetwork.IsConnected)
+                pv.RPC(nameof(PhotonViewToPlay), RpcTarget.All, cardToPlay.pv.ViewID);
+            else
+                AddToPlayArea(cardToPlay);
+
+            MultiFunction(nameof(LoseCoin), RpcTarget.All, new object[1] { cardToPlay.dataFile.coinCost });
             yield return new WaitForSeconds(0.25f);
-            yield return chosenCard.CommandInstructions(this);
+            yield return cardToPlay.CommandInstructions(this);
         }
     }
 
-    void AddToPlay(Card card)
+    void AddToPlayArea(Card card)
     {
+        card.name = card.name.Replace("(Clone)", "");
         card.cg.alpha = 1;
 
         cardsPlayed.Add(card);
@@ -313,9 +328,9 @@ public class Player : MonoBehaviour
     }
 
     [PunRPC]
-    void AddToPlay(int cardID)
+    void PhotonViewToPlay(int cardID)
     {
-        AddToPlay(PhotonView.Find(cardID).GetComponent<Card>());
+        AddToPlayArea(PhotonView.Find(cardID).GetComponent<Card>());
     }
 
     [PunRPC]
@@ -324,13 +339,12 @@ public class Player : MonoBehaviour
         if (PhotonNetwork.IsConnected)
         {
             GameObject newDud = PhotonNetwork.Instantiate(dudPrefab.name, Vector3.zero, new Quaternion());
-            pv.RPC(nameof(AddToPlay), RpcTarget.All, newDud.GetComponent<PhotonView>().ViewID);
-
+            pv.RPC(nameof(PhotonViewToPlay), RpcTarget.All, newDud.GetComponent<PhotonView>().ViewID);
         }
         else
         {
             Card newDud = Instantiate(dudPrefab);
-            AddToPlay(newDud);
+            AddToPlayArea(newDud);
         }
     }
 
@@ -342,6 +356,7 @@ public class Player : MonoBehaviour
     public void GainCoin(int coins)
     {
         this.coins += coins;
+        Log.instance.AddText($"{this.name} gans {coins} Coin.");
         UpdateButton();
     }
 
@@ -349,6 +364,7 @@ public class Player : MonoBehaviour
     public void LoseCoin(int coins)
     {
         this.coins = Mathf.Max(this.coins - coins, 0);
+        Log.instance.AddText($"{this.name} loses {coins} Coin.");
         UpdateButton();
     }
 
@@ -356,6 +372,7 @@ public class Player : MonoBehaviour
     public void TakeNegCrown(int crowns)
     {
         this.negCrowns += crowns;
+        Log.instance.AddText($"{this.name} takes -1{crowns} Neg Crown.");
         UpdateButton();
     }
 
@@ -363,6 +380,7 @@ public class Player : MonoBehaviour
     public void RemoveNegCrown(int crowns)
     {
         this.negCrowns = Mathf.Max(this.negCrowns - crowns, 0);
+        Log.instance.AddText($"{this.name} removes -1{crowns} Neg Crown.");
         UpdateButton();
     }
 
@@ -370,17 +388,19 @@ public class Player : MonoBehaviour
 
 #region Turn
 
-    public IEnumerator TakeTurnRPC()
+    public IEnumerator TakeTurnRPC(int turnNumber)
     {
-        StartCoroutine(MultiEnumerator(nameof(TakeTurn), RpcTarget.All));
+        StartCoroutine(MultiEnumerator(nameof(TakeTurn), RpcTarget.All, new object[1] {turnNumber} ));
         myTurn = true;
         while (myTurn)
             yield return null;
     }
 
     [PunRPC]
-    IEnumerator TakeTurn()
+    IEnumerator TakeTurn(int turnNumber)
     {
+        Log.instance.AddText($"");
+        Log.instance.AddText($"Turn {turnNumber} - {this.name}");
         if (!PhotonNetwork.IsConnected || this.pv.IsMine)
         {
             yield return ChooseAction();
@@ -421,11 +441,22 @@ public class Player : MonoBehaviour
 
     public IEnumerator ChooseCard(List<Card> possibleCards, bool optional)
     {
-        choice = -1;
+        choice = -10;
         chosenCard = null;
 
         if (possibleCards.Count > 0)
         {
+            Popup popup = null;
+
+            if (optional)
+            {
+                popup = Instantiate(CarryVariables.instance.textPopup);
+                popup.transform.SetParent(this.transform);
+                popup.StatsSetup("Decline?", Vector3.zero);
+                popup.AddTextButton("Decline");
+                StartCoroutine(popup.WaitForChoice());
+            }
+
             for (int i = 0; i < possibleCards.Count; i++)
             {
                 Card nextCard = possibleCards[i];
@@ -434,26 +465,34 @@ public class Player : MonoBehaviour
                 nextCard.button.onClick.RemoveAllListeners();
                 nextCard.button.interactable = true;
                 nextCard.button.onClick.AddListener(() => ReceiveChoice(buttonNumber));
+                nextCard.border.gameObject.SetActive(true);
             }
 
-            while (choice == -1)
+            while (choice == -10)
             {
                 yield return null;
+                if (optional && popup == null)
+                    break;
             }
 
-            chosenCard = possibleCards[choice];
+            if (popup != null)
+                Destroy(popup.gameObject);
+
+            chosenCard = (choice >= 0) ? possibleCards[choice] : null;
 
             for (int i = 0; i < possibleCards.Count; i++)
             {
                 Card nextCard = possibleCards[i];
                 nextCard.button.onClick.RemoveAllListeners();
                 nextCard.button.interactable = false;
+                nextCard.border.gameObject.SetActive(false);
             }
         }
     }
 
     void ReceiveChoice(int number)
     {
+        Debug.Log(number);
         choice = number;
     }
 

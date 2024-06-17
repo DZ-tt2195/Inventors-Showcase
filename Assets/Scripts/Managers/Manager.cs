@@ -200,7 +200,7 @@ public class Manager : MonoBehaviour
         {
             foreach (Player player in playersInOrder)
             {
-                yield return player.TakeTurnRPC();
+                yield return player.TakeTurnRPC(j+1);
                 yield return new WaitForSeconds(0.25f);
             }
         }
