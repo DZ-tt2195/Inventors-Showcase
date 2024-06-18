@@ -10,7 +10,7 @@ public class Employee : Card
     {
         this.dataFile = DownloadSheets.instance.deckCardData[fileSlot];
         this.transform.SetParent(Manager.instance.deck);
-        //this.originalSprite = Resources.Load<Sprite>($"Employee/{this.dataFile.cardName}");
+        this.originalSprite = Resources.Load<Sprite>($"Employee/{this.dataFile.cardName}");
         base.GetDataFile(fileSlot);
     }
 }

@@ -172,6 +172,18 @@ public class Card : MonoBehaviour
         yield return ResolveInstructions(dataFile.replaceInstructions, player, logged);
     }
 
+    [PunRPC]
+    void StopInstructions()
+    {
+        runNextMethod = false;
+    }
+
+    [PunRPC]
+    void FinishedInstructions()
+    {
+        runningMethod = false;
+    }
+
     IEnumerator ResolveInstructions(string[] listOfInstructions, Player player, int logged = -1)
     {
         runNextMethod = true;
@@ -182,7 +194,6 @@ public class Card : MonoBehaviour
 
             if (dataFile.whoToTarget[i] == PlayerTarget.You)
             {
-                runningMethod = true;
                 foreach (string methodName in listOfSmallInstructions)
                 {
                     runningMethod = true;
@@ -190,7 +201,7 @@ public class Card : MonoBehaviour
 
                     while (runningMethod)
                         yield return null;
-                    if (!runNextMethod) break;
+                    if (!runNextMethod) yield break;
                 }
             }
             else
@@ -199,6 +210,7 @@ public class Card : MonoBehaviour
                 for (int j = 0; j < Manager.instance.playersInOrder.Count; j++)
                 {
                     Player nextPlayer = Manager.instance.playersInOrder[playerTracker];
+                    runNextMethod = true;
 
                     if (dataFile.whoToTarget[i] == PlayerTarget.Others && player == nextPlayer)
                         continue;
@@ -209,6 +221,7 @@ public class Card : MonoBehaviour
                         StartCoroutine((IEnumerator)dictionary[methodName].Invoke(this, new object[2] { nextPlayer, logged }));
                         while (runningMethod)
                             yield return null;
+                        if (!runNextMethod) break;
                     }
 
                     playerTracker = (playerTracker == Manager.instance.playersInOrder.Count - 1) ? 0 : playerTracker + 1;
@@ -221,35 +234,35 @@ public class Card : MonoBehaviour
     {
         yield return null;
         player.MultiFunction(nameof(player.RequestDraw), RpcTarget.MasterClient, new object[1] {dataFile.numDraw});
-        runningMethod = false;
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator GainCoins(Player player, int logged)
     {
         yield return null;
         player.MultiFunction(nameof(player.GainCoin), RpcTarget.All, new object[1] { dataFile.numGain });
-        runningMethod = false;
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator LoseCoins(Player player, int logged)
     {
         yield return null;
         player.MultiFunction(nameof(player.LoseCoin), RpcTarget.All, new object[1] { dataFile.numGain });
-        runningMethod = false;
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator TakeNeg(Player player, int logged)
     {
         yield return null;
         player.MultiFunction(nameof(player.TakeNegCrown), RpcTarget.All, new object[1] { dataFile.numCrowns });
-        runningMethod = false;
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator RemoveNeg(Player player, int logged)
     {
         yield return null;
         player.MultiFunction(nameof(player.RemoveNegCrown), RpcTarget.All, new object[1] { dataFile.numCrowns });
-        runningMethod = false;
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator ReplaceCardOrMore(Player player, int logged)
@@ -257,7 +270,7 @@ public class Card : MonoBehaviour
         yield return player.ChooseCardToPlay(player.listOfHand.Where(
             card => card.dataFile.coinCost <= player.coins && card.dataFile.coinCost >= card.dataFile.numPlayCost).
             ToList(), true);
-        runningMethod = false;
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator ReplaceCardOrLess(Player player, int logged)
@@ -265,7 +278,7 @@ public class Card : MonoBehaviour
         yield return player.ChooseCardToPlay(player.listOfHand.Where(
             card => card.dataFile.coinCost <= player.coins && card.dataFile.coinCost <= card.dataFile.numPlayCost).
             ToList(), true);
-        runningMethod = false;
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator DiscardHand(Player player, int logged)
@@ -273,7 +286,7 @@ public class Card : MonoBehaviour
         yield return null;
         foreach (Card card in player.listOfHand)
             player.DiscardRPC(card);
-        runningMethod = false;
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator MandatoryDiscard(Player player, int logged)
@@ -284,7 +297,7 @@ public class Card : MonoBehaviour
             yield return player.ChooseCard(player.listOfHand, false);
             player.DiscardRPC(player.chosenCard);
         }
-        runningMethod = false;
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator OptionalDiscard(Player player, int logged)
@@ -296,7 +309,7 @@ public class Card : MonoBehaviour
 
             if (player.chosenCard == null)
             {
-                runNextMethod = false;
+                MultiFunction(nameof(StopInstructions), RpcTarget.All);
                 break;
             }
             else
@@ -304,17 +317,57 @@ public class Card : MonoBehaviour
                 player.DiscardRPC(player.chosenCard);
             }
         }
-        runningMethod = false;
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator HandOrMore(Player player, int logged)
+    {
+        yield return null;
+        if (!(player.listOfHand.Count <= dataFile.numMisc))
+            MultiFunction(nameof(StopInstructions), RpcTarget.All);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator MoneyOrLess(Player player, int logged)
     {
         yield return null;
         if (!(player.coins <= dataFile.numMisc))
-            runNextMethod = false;
-        runningMethod = false;
+            MultiFunction(nameof(StopInstructions), RpcTarget.All);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
-    #endregion
+    IEnumerator LastUsedExplore(Player player, int logged)
+    {
+        yield return null;
+        if (player.lastUsedAction == null || !player.lastUsedAction.name.Equals("Explore"))
+            MultiFunction(nameof(StopInstructions), RpcTarget.All);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator LastUsedCollect(Player player, int logged)
+    {
+        yield return null;
+        if (player.lastUsedAction == null || !player.lastUsedAction.name.Equals("Collect"))
+            MultiFunction(nameof(StopInstructions), RpcTarget.All);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator LastUsedRecruit(Player player, int logged)
+    {
+        yield return null;
+        if (player.lastUsedAction == null || !player.lastUsedAction.name.Equals("Recruit"))
+            MultiFunction(nameof(StopInstructions), RpcTarget.All);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator LastUsedSpecial(Player player, int logged)
+    {
+        yield return null;
+        if (player.lastUsedAction == null || player.lastUsedAction != Manager.instance.listOfActions[^1])
+            MultiFunction(nameof(StopInstructions), RpcTarget.All);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+#endregion
 
 }

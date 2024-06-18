@@ -42,6 +42,7 @@ public class Player : MonoBehaviour
         public Dictionary<string, MethodInfo> dictionary = new();
         [ReadOnly] public int choice;
         [ReadOnly] public Card chosenCard;
+        [ReadOnly] public Action lastUsedAction;
 
     #endregion
 
@@ -401,9 +402,21 @@ public class Player : MonoBehaviour
     {
         Log.instance.AddText($"");
         Log.instance.AddText($"Turn {turnNumber} - {this.name}");
+
         if (!PhotonNetwork.IsConnected || this.pv.IsMine)
         {
-            yield return ChooseAction();
+            Popup popup = Instantiate(CarryVariables.instance.cardPopup);
+            popup.transform.SetParent(this.transform);
+            popup.StatsSetup("Choose an action.", Vector3.zero);
+            Manager.instance.instructions.text = "Choose an action.";
+
+            foreach (Action action in Manager.instance.listOfActions)
+                popup.AddCardButton(action, 1);
+            yield return popup.WaitForChoice();
+
+            Card actionToUse = popup.chosenCard;
+            Destroy(popup.gameObject);
+            yield return actionToUse.CommandInstructions(this);
 
             int currentCards = cardsPlayed.Count;
             Manager.instance.instructions.text = "Play a new card (or add a Dud).";
@@ -412,29 +425,14 @@ public class Player : MonoBehaviour
             if (currentCards == cardsPlayed.Count)
                 CreateDudRPC();
 
-            MultiFunction(nameof(EndTurn), RpcTarget.All);
+            MultiFunction(nameof(EndTurn), RpcTarget.All, new object[1] { Manager.instance.listOfActions.FindIndex(action => action == actionToUse) });
         }
     }
 
-    IEnumerator ChooseAction()
-    {
-        Popup popup = Instantiate(CarryVariables.instance.cardPopup);
-        popup.transform.SetParent(this.transform);
-        popup.StatsSetup("Choose an action.", Vector3.zero);
-        Manager.instance.instructions.text = "Choose an action.";
-
-        foreach (Action action in Manager.instance.listOfActions)
-            popup.AddCardButton(action, 1);
-        yield return popup.WaitForChoice();
-
-        Card actionToUse = popup.chosenCard;
-        Destroy(popup.gameObject);
-        yield return actionToUse.CommandInstructions(this);
-    }
-
     [PunRPC]
-    void EndTurn()
+    void EndTurn(int chosenAction)
     {
+        lastUsedAction = Manager.instance.listOfActions[chosenAction];
         myTurn = false;
         cardsPlayed.Clear();
     }

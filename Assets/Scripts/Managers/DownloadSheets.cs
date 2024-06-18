@@ -39,6 +39,7 @@ public class DownloadSheets : MonoBehaviour
 
     Dictionary<string, int> cardSheetsColumns = new();
     [ReadOnly] public List<CardData> mainActionData = new();
+    [ReadOnly] public List<CardData> specialActionData = new();
     [ReadOnly] public List<CardData> deckCardData = new();
 
     private void Awake()
@@ -65,6 +66,7 @@ public class DownloadSheets : MonoBehaviour
         {
             CoroutineGroup group = new(this);
             group.StartCoroutine(Download("Main Action"));
+            group.StartCoroutine(Download("Special Action"));
             group.StartCoroutine(Download("Cards"));
 
             while (group.AnyProcessing)
@@ -72,6 +74,7 @@ public class DownloadSheets : MonoBehaviour
         }
 
         mainActionData = ReadCardData("Main Action");
+        specialActionData = ReadCardData("Special Action");
         deckCardData = ReadCardData("Cards");
     }
 

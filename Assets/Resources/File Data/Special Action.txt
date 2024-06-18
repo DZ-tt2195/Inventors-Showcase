@@ -1,0 +1,35 @@
+{
+    [
+      "cardName",
+      "textBox",
+      "coinCost",
+      "scoringCrowns",
+      "whoToTarget",
+      "commandInstructions",
+      "replaceInstructions",
+      "numDraw",
+      "numGain",
+      "numCrowns",
+      "numPlayCost",
+      "numMisc",
+      "artCredit",
+      "isDirector"
+    ],
+    [
+      "Unleash",
+      "Take -5 Neg Crown. Gain 8 Coin. Draw 3 Card.",
+      "",
+      "",
+      "You",
+      "TakeNeg/GainCoins/DrawCards",
+      "",
+      "3",
+      "8",
+      "-5",
+      "",
+      "",
+      "",
+      "FALSE"
+    ]
+  ]
+}

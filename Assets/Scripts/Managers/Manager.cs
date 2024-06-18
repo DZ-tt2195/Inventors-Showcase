@@ -185,12 +185,25 @@ public class Manager : MonoBehaviour
                 nextCard.GetDataFile(i);
             }
         }
-        deck.Shuffle();
+
+        Action specialAction;
+        int randomIndex = DownloadSheets.instance.mainActionData.Count + Random.Range(0, DownloadSheets.instance.specialActionData.Count);
+        if (PhotonNetwork.IsConnected)
+        {
+            specialAction = PhotonNetwork.Instantiate(CarryVariables.instance.actionPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Action>();
+            specialAction.pv.RPC("GetDataFile", RpcTarget.All, randomIndex);
+        }
+        else
+        {
+            specialAction = Instantiate(CarryVariables.instance.actionPrefab, new Vector3(-10000, -10000), new Quaternion());
+            specialAction.GetDataFile(randomIndex);
+        }
+
     }
 
     #endregion
 
-#region Gameplay
+    #region Gameplay
 
     IEnumerator PlayUntilFinish()
     {
