@@ -55,8 +55,8 @@ public class Popup : MonoBehaviour
         nextButton.onClick.AddListener(() => ReceiveChoice(buttonNumber, null));
         buttonsInCollector.Add(nextButton);
 
-        imageWidth.sizeDelta = new Vector2(Mathf.Max(buttonsInCollector.Count, 2) * 375, imageWidth.sizeDelta.y);
-        textWidth.sizeDelta = new Vector2(Mathf.Max(buttonsInCollector.Count, 2) * 375, textWidth.sizeDelta.y);
+        imageWidth.sizeDelta = new Vector2(Mathf.Max(buttonsInCollector.Count, 2) * 350, imageWidth.sizeDelta.y);
+        textWidth.sizeDelta = new Vector2(Mathf.Max(buttonsInCollector.Count, 2) * 350, textWidth.sizeDelta.y);
 
         for (int i = 0; i < buttonsInCollector.Count; i++)
         {
@@ -77,8 +77,8 @@ public class Popup : MonoBehaviour
         nextButton.onClick.AddListener(() => ReceiveChoice(buttonNumber, card));
         buttonsInCollector.Add(nextButton);
 
-        imageWidth.sizeDelta = new Vector2(Mathf.Max(buttonsInCollector.Count, 2) * 375, imageWidth.sizeDelta.y);
-        textWidth.sizeDelta = new Vector2(Mathf.Max(buttonsInCollector.Count, 2) * 375, textWidth.sizeDelta.y);
+        imageWidth.sizeDelta = new Vector2(Mathf.Max(buttonsInCollector.Count, 2) * 350, imageWidth.sizeDelta.y);
+        textWidth.sizeDelta = new Vector2(Mathf.Max(buttonsInCollector.Count, 2) * 350, textWidth.sizeDelta.y);
 
         for (int i = 0; i < buttonsInCollector.Count; i++)
         {

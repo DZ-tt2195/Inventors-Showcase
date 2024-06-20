@@ -197,11 +197,14 @@ public class Card : MonoBehaviour
                 foreach (string methodName in listOfSmallInstructions)
                 {
                     runningMethod = true;
-                    StartCoroutine((IEnumerator)dictionary[methodName].Invoke(this, new object[2] { player, logged }));
+                    if (methodName != "None")
+                    {
+                        StartCoroutine((IEnumerator)dictionary[methodName].Invoke(this, new object[2] { player, logged }));
 
-                    while (runningMethod)
-                        yield return null;
-                    if (!runNextMethod) yield break;
+                        while (runningMethod)
+                            yield return null;
+                        if (!runNextMethod) yield break;
+                    }
                 }
             }
             else
@@ -218,10 +221,13 @@ public class Card : MonoBehaviour
                     foreach (string methodName in listOfSmallInstructions)
                     {
                         runningMethod = true;
-                        StartCoroutine((IEnumerator)dictionary[methodName].Invoke(this, new object[2] { nextPlayer, logged }));
-                        while (runningMethod)
-                            yield return null;
-                        if (!runNextMethod) break;
+                        if (methodName != "None")
+                        {
+                            StartCoroutine((IEnumerator)dictionary[methodName].Invoke(this, new object[2] { nextPlayer, logged }));
+                            while (runningMethod)
+                                yield return null;
+                            if (!runNextMethod) break;
+                        }
                     }
 
                     playerTracker = (playerTracker == Manager.instance.playersInOrder.Count - 1) ? 0 : playerTracker + 1;
@@ -267,17 +273,47 @@ public class Card : MonoBehaviour
 
     IEnumerator ReplaceCardOrMore(Player player, int logged)
     {
+        List<Card> cardsToReplace = player.listOfPlay;
+
+        if (cardsToReplace.Count == 0)
+        {
+            MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+            yield break;
+        }
+
         yield return player.ChooseCardToPlay(player.listOfHand.Where(
             card => card.dataFile.coinCost <= player.coins && card.dataFile.coinCost >= card.dataFile.numPlayCost).
-            ToList(), true);
+            ToList(), cardsToReplace);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator ReplaceNonDudWithDud(Player player, int logged)
+    {
+        List<Card> cardsToReplace = player.listOfPlay.Where(card => card.name != "Dud").ToList();
+        if (cardsToReplace.Count == 0)
+        {
+            player.chosenCard = null;
+            MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+            yield break;
+        }
+
+        yield return player.ChooseCardToPlay(new() { player.CreateDudRPC(false)}, cardsToReplace);
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator ReplaceCardOrLess(Player player, int logged)
     {
+        List<Card> cardsToReplace = player.listOfPlay;
+
+        if (cardsToReplace.Count == 0)
+        {
+            MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+            yield break;
+        }
+
         yield return player.ChooseCardToPlay(player.listOfHand.Where(
             card => card.dataFile.coinCost <= player.coins && card.dataFile.coinCost <= card.dataFile.numPlayCost).
-            ToList(), true);
+            ToList(), cardsToReplace);
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
@@ -313,9 +349,7 @@ public class Card : MonoBehaviour
                 break;
             }
             else
-            {
                 player.DiscardRPC(player.chosenCard);
-            }
         }
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
@@ -336,26 +370,34 @@ public class Card : MonoBehaviour
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
-    IEnumerator LastUsedExplore(Player player, int logged)
+    IEnumerator MoneyOrMore(Player player, int logged)
     {
         yield return null;
-        if (player.lastUsedAction == null || !player.lastUsedAction.name.Equals("Explore"))
+        if (!(player.coins >= dataFile.numMisc))
             MultiFunction(nameof(StopInstructions), RpcTarget.All);
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
-    IEnumerator LastUsedCollect(Player player, int logged)
+    IEnumerator LastUsedBrainstorm(Player player, int logged)
     {
         yield return null;
-        if (player.lastUsedAction == null || !player.lastUsedAction.name.Equals("Collect"))
+        if (player.lastUsedAction == null || !player.lastUsedAction.name.Equals("Brainstorm"))
             MultiFunction(nameof(StopInstructions), RpcTarget.All);
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
-    IEnumerator LastUsedRecruit(Player player, int logged)
+    IEnumerator LastUsedStockpile(Player player, int logged)
     {
         yield return null;
-        if (player.lastUsedAction == null || !player.lastUsedAction.name.Equals("Recruit"))
+        if (player.lastUsedAction == null || !player.lastUsedAction.name.Equals("Stockpile"))
+            MultiFunction(nameof(StopInstructions), RpcTarget.All);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator LastUsedUpgrade(Player player, int logged)
+    {
+        yield return null;
+        if (player.lastUsedAction == null || !player.lastUsedAction.name.Equals("Upgrade"))
             MultiFunction(nameof(StopInstructions), RpcTarget.All);
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
@@ -368,6 +410,22 @@ public class Card : MonoBehaviour
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
-#endregion
+    IEnumerator PlayedCardOrMore(Player player, int logged)
+    {
+        yield return null;
+        if (player.cardsPlayed.Count >= dataFile.numMisc)
+            MultiFunction(nameof(StopInstructions), RpcTarget.All);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator ChosenCard(Player player, int logged)
+    {
+        yield return null;
+        if (player.chosenCard == null)
+            MultiFunction(nameof(StopInstructions), RpcTarget.All);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    #endregion
 
 }

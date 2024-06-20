@@ -16,8 +16,8 @@
       "isDirector"
     ],
     [
-      "Explore",
-      "Draw 2 Card.",
+      "Brainstorm",
+      "MAIN ACTION: Draw 2 Card.",
       "",
       "",
       "You",
@@ -32,8 +32,8 @@
       "FALSE"
     ],
     [
-      "Collect",
-      "Gain 4 Coin.",
+      "Stockpile",
+      "MAIN ACTION: Gain 4 Coin.",
       "",
       "",
       "You",
@@ -48,8 +48,8 @@
       "FALSE"
     ],
     [
-      "Recruit",
-      "Replace 1 Card.",
+      "Upgrade",
+      "MAIN ACTION: Replace 1 Card.",
       "",
       "",
       "You",

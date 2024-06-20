@@ -16,8 +16,8 @@
       "isDirector"
     ],
     [
-      "Unleash",
-      "Take -5 Neg Crown. Gain 8 Coin. Draw 3 Card.",
+      "Evil Plan",
+      "SPECIAL ACTION: Take -5 Neg Crown. Gain 8 Coin. Draw 3 Card.",
       "",
       "",
       "You",

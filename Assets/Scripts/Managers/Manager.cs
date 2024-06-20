@@ -165,7 +165,7 @@ public class Manager : MonoBehaviour
         foreach (Player player in playersInOrder)
         {
             player.MultiFunction(nameof(player.RequestDraw), RpcTarget.MasterClient, new object[1] { 2 });
-            player.MultiFunction(nameof(player.GainCoin), RpcTarget.All, new object[1] { 5 });
+            player.MultiFunction(nameof(player.GainCoin), RpcTarget.All, new object[1] { 4 });
         }
     }
 
@@ -203,7 +203,7 @@ public class Manager : MonoBehaviour
 
     #endregion
 
-    #region Gameplay
+#region Gameplay
 
     IEnumerator PlayUntilFinish()
     {
