@@ -229,7 +229,7 @@
       "6",
       "3",
       "Others",
-      "HandOrMore-MandatoryDiscard",
+      "HandOrMore/MandatoryDiscard",
       "",
       "3",
       "",

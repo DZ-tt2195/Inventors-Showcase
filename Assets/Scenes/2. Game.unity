@@ -754,7 +754,7 @@ MonoBehaviour:
   OwnershipTransfer: 0
   observableSearch: 2
   ObservedComponents: []
-  sceneViewId: 1
+  sceneViewId: 998
   InstantiationId: 0
   isRuntimeInstantiated: 0
 --- !u!114 &675451493
@@ -785,6 +785,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   RT: {fileID: 203774334}
   textBoxClone: {fileID: 8879651641130450831, guid: 6d5978b73c3d4470cbd36af5d370f5c0, type: 3}
+  pv: {fileID: 0}
 --- !u!114 &675451495
 MonoBehaviour:
   m_ObjectHideFlags: 0

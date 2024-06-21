@@ -22,7 +22,6 @@ public class Card : MonoBehaviour
 
     [Foldout("Art", true)]
         [ReadOnly] public CanvasGroup cg;
-        public Sprite faceDownSprite;
         [ReadOnly] public Sprite originalSprite;
         public Image border;
 
@@ -162,12 +161,12 @@ public class Card : MonoBehaviour
 
 #region Instructions
 
-    public IEnumerator CommandInstructions(Player player, int logged = -1)
+    public IEnumerator CommandInstructions(Player player, int logged)
     {
         yield return ResolveInstructions(dataFile.commandInstructions, player, logged);
     }
 
-    public IEnumerator ReplaceInstructions(Player player, int logged = -1)
+    public IEnumerator ReplaceInstructions(Player player, int logged)
     {
         yield return ResolveInstructions(dataFile.replaceInstructions, player, logged);
     }
@@ -184,7 +183,7 @@ public class Card : MonoBehaviour
         runningMethod = false;
     }
 
-    IEnumerator ResolveInstructions(string[] listOfInstructions, Player player, int logged = -1)
+    IEnumerator ResolveInstructions(string[] listOfInstructions, Player player, int logged)
     {
         runNextMethod = true;
         for (int i = 0; i < listOfInstructions.Count(); i++)
@@ -239,35 +238,35 @@ public class Card : MonoBehaviour
     IEnumerator DrawCards(Player player, int logged)
     {
         yield return null;
-        player.MultiFunction(nameof(player.RequestDraw), RpcTarget.MasterClient, new object[1] {dataFile.numDraw});
+        player.MultiFunction(nameof(player.RequestDraw), RpcTarget.MasterClient, new object[2] {dataFile.numDraw, logged});
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator GainCoins(Player player, int logged)
     {
         yield return null;
-        player.MultiFunction(nameof(player.GainCoin), RpcTarget.All, new object[1] { dataFile.numGain });
+        player.MultiFunction(nameof(player.GainCoin), RpcTarget.All, new object[2] { dataFile.numGain, logged });
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator LoseCoins(Player player, int logged)
     {
         yield return null;
-        player.MultiFunction(nameof(player.LoseCoin), RpcTarget.All, new object[1] { dataFile.numGain });
+        player.MultiFunction(nameof(player.LoseCoin), RpcTarget.All, new object[2] { dataFile.numGain, logged });
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator TakeNeg(Player player, int logged)
     {
         yield return null;
-        player.MultiFunction(nameof(player.TakeNegCrown), RpcTarget.All, new object[1] { dataFile.numCrowns });
+        player.MultiFunction(nameof(player.TakeNegCrown), RpcTarget.All, new object[2] { dataFile.numCrowns, logged });
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator RemoveNeg(Player player, int logged)
     {
         yield return null;
-        player.MultiFunction(nameof(player.RemoveNegCrown), RpcTarget.All, new object[1] { dataFile.numCrowns });
+        player.MultiFunction(nameof(player.RemoveNegCrown), RpcTarget.All, new object[2] { dataFile.numCrowns, logged });
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
@@ -283,7 +282,7 @@ public class Card : MonoBehaviour
 
         yield return player.ChooseCardToPlay(player.listOfHand.Where(
             card => card.dataFile.coinCost <= player.coins && card.dataFile.coinCost >= card.dataFile.numPlayCost).
-            ToList(), cardsToReplace);
+            ToList(), cardsToReplace, logged);
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
@@ -297,7 +296,7 @@ public class Card : MonoBehaviour
             yield break;
         }
 
-        yield return player.ChooseCardToPlay(new() { player.CreateDudRPC(false)}, cardsToReplace);
+        yield return player.ChooseCardToPlay(new() { player.CreateJunkRPC(false, -1)}, cardsToReplace, logged);
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
@@ -313,7 +312,7 @@ public class Card : MonoBehaviour
 
         yield return player.ChooseCardToPlay(player.listOfHand.Where(
             card => card.dataFile.coinCost <= player.coins && card.dataFile.coinCost <= card.dataFile.numPlayCost).
-            ToList(), cardsToReplace);
+            ToList(), cardsToReplace, logged);
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
@@ -321,7 +320,7 @@ public class Card : MonoBehaviour
     {
         yield return null;
         foreach (Card card in player.listOfHand)
-            player.DiscardRPC(card);
+            player.DiscardRPC(card, logged);
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
@@ -331,7 +330,7 @@ public class Card : MonoBehaviour
         {
             Manager.instance.instructions.text = $"Discard a card ({dataFile.numDraw-i} more).";
             yield return player.ChooseCard(player.listOfHand, false);
-            player.DiscardRPC(player.chosenCard);
+            player.DiscardRPC(player.chosenCard, logged);
         }
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
@@ -349,7 +348,9 @@ public class Card : MonoBehaviour
                 break;
             }
             else
-                player.DiscardRPC(player.chosenCard);
+            {
+                player.DiscardRPC(player.chosenCard, logged);
+            }
         }
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }

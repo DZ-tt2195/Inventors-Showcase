@@ -14,7 +14,7 @@ public class CarryVariables : MonoBehaviour
     public static CarryVariables instance;
     [Foldout("Prefabs", true)]
     public Player playerPrefab;
-    public Employee employeePrefab;
+    public Robot robotPrefab;
     public Action actionPrefab;
     public Popup cardPopup;
     public Popup textPopup;
@@ -28,6 +28,7 @@ public class CarryVariables : MonoBehaviour
     PhotonView pv;
     [SerializeField] Transform permanentCanvas;
     [ReadOnly] public Dictionary<string, MethodInfo> dictionary = new();
+    public Sprite faceDownSprite;
 
     private void Awake()
     {

@@ -17,7 +17,7 @@ public class Popup : MonoBehaviour
     [SerializeField] Button textButton;
     [SerializeField] Button cardButton;
     List<Button> buttonsInCollector = new List<Button>();
-    [ReadOnly] public int chosenButton = -1;
+    [ReadOnly] public int chosenButton = -10;
     [ReadOnly] public Card chosenCard = null;
 
     void Awake()
@@ -113,8 +113,9 @@ public class Popup : MonoBehaviour
 
     internal IEnumerator WaitForChoice()
     {
-        chosenButton = -1;
-        while (chosenButton == -1)
+        chosenButton = -10;
+        while (chosenButton == -10)
             yield return null;
+        //Debug.Log($"clicked {chosenButton}");
     }
 }

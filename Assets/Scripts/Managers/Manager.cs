@@ -144,19 +144,19 @@ public class Manager : MonoBehaviour
 
     void CreateEmployees()
     {
-        for (int i = 0; i < DownloadSheets.instance.deckCardData.Count; i++)
+        for (int i = 0; i < DownloadSheets.instance.robotData.Count; i++)
         {
             for (int j = 0; j < 2; j++)
             {
-                Employee nextCard = null;
+                Robot nextCard = null;
                 if (PhotonNetwork.IsConnected)
                 {
-                    nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.employeePrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Employee>();
+                    nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.robotPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Robot>();
                     nextCard.pv.RPC("GetDataFile", RpcTarget.All, i);
                 }
                 else
                 {
-                    nextCard = Instantiate(CarryVariables.instance.employeePrefab, new Vector3(-10000, -10000), new Quaternion());
+                    nextCard = Instantiate(CarryVariables.instance.robotPrefab, new Vector3(-10000, -10000), new Quaternion());
                     nextCard.GetDataFile(i);
                 }
             }
@@ -164,8 +164,8 @@ public class Manager : MonoBehaviour
         deck.Shuffle();
         foreach (Player player in playersInOrder)
         {
-            player.MultiFunction(nameof(player.RequestDraw), RpcTarget.MasterClient, new object[1] { 2 });
-            player.MultiFunction(nameof(player.GainCoin), RpcTarget.All, new object[1] { 4 });
+            player.MultiFunction(nameof(player.RequestDraw), RpcTarget.MasterClient, new object[2] { 2, 0 });
+            player.MultiFunction(nameof(player.GainCoin), RpcTarget.All, new object[2] { 4, 0 });
         }
     }
 

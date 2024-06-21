@@ -91,7 +91,7 @@ GameObject:
   - component: {fileID: 1697648877009758180}
   - component: {fileID: 6401462766861759724}
   m_Layer: 0
-  m_Name: Dud
+  m_Name: Junk
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -384,7 +384,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: DUD
+  m_text: JUNK
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8c64c47af7c1c4fb5b88d184433c6c44, type: 2}
   m_sharedMaterial: {fileID: -3852492252101762229, guid: 8c64c47af7c1c4fb5b88d184433c6c44, type: 2}
@@ -411,7 +411,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 191.4
+  m_fontSize: 138.3
   m_fontSizeBase: 200
   m_fontWeight: 400
   m_enableAutoSizing: 1

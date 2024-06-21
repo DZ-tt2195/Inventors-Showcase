@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using MyBox;
 using System.Text.RegularExpressions;
 using Photon.Pun;
+using System.Reflection;
 
 [RequireComponent(typeof(PhotonView))]
 public class Log : MonoBehaviour
@@ -16,6 +17,8 @@ public class Log : MonoBehaviour
     GridLayoutGroup gridGroup;
     float startingHeight;
     [SerializeField] TMP_Text textBoxClone;
+    [ReadOnly] public PhotonView pv;
+    public Dictionary<string, MethodInfo> dictionary = new();
 
     private void Awake()
     {
@@ -23,6 +26,36 @@ public class Log : MonoBehaviour
         startingHeight = RT.sizeDelta.y;
         scroll = this.transform.GetChild(1).GetComponent<Scrollbar>();
         instance = this;
+        pv = GetComponent<PhotonView>();
+    }
+
+    public void MultiFunction(string methodName, RpcTarget affects, object[] parameters = null)
+    {
+        if (!dictionary.ContainsKey(methodName))
+            AddToDictionary(methodName);
+
+        if (PhotonNetwork.IsConnected)
+            pv.RPC(dictionary[methodName].Name, affects, parameters);
+        else
+            dictionary[methodName].Invoke(this, parameters);
+    }
+
+    public IEnumerator MultiEnumerator(string methodName, RpcTarget affects, object[] parameters = null)
+    {
+        if (!dictionary.ContainsKey(methodName))
+            AddToDictionary(methodName);
+
+        if (PhotonNetwork.IsConnected)
+            pv.RPC(dictionary[methodName].Name, affects, parameters);
+        else
+            yield return (IEnumerator)dictionary[methodName].Invoke(this, parameters);
+    }
+
+    void AddToDictionary(string methodName)
+    {
+        MethodInfo method = typeof(Log).GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (method != null && method.ReturnType == typeof(void) || method.ReturnType == typeof(IEnumerator))
+            dictionary.Add(methodName, method);
     }
 
     /*
@@ -63,6 +96,7 @@ public class Log : MonoBehaviour
     [PunRPC]
     public void AddText(string logText, int indent = 0)
     {
+        //Debug.LogError($"{indent}: {logText}");
         if (indent < 0)
             return;
 

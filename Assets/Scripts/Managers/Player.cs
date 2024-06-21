@@ -18,7 +18,7 @@ public class Player : MonoBehaviour
 #region Variables
 
     [Foldout("Prefabs", true)]
-        [SerializeField] Card dudPrefab;
+        [SerializeField] Card junkPrefab;
         [SerializeField] Button playerButtonPrefab;
 
     [Foldout("Misc", true)]
@@ -107,8 +107,8 @@ public class Player : MonoBehaviour
 
         if (!PhotonNetwork.IsConnected || pv.IsMine)
         {
-            CreateDudRPC(true);
-            CreateDudRPC(true);
+            CreateJunkRPC(true, -1);
+            CreateJunkRPC(true, -1);
             MoveScreen();
         }
     }
@@ -132,34 +132,36 @@ public class Player : MonoBehaviour
 
 #region Cards in Hand
 
-    public void DiscardRPC(Card card)
+    public void DiscardRPC(Card card, int logged)
     {
         if (PhotonNetwork.IsConnected)
             pv.RPC(nameof(SendDiscard), RpcTarget.All, card.pv.ViewID);
         else
-            SendDiscard(card);
+            SendDiscard(card, logged);
     }
 
     [PunRPC]
-    void SendDiscard(int cardID)
+    void SendDiscard(int cardID, int logged)
     {
         Card discardMe = PhotonView.Find(cardID).GetComponent<Card>();
-        SendDiscard(discardMe);
+        SendDiscard(discardMe, logged);
     }
 
-    void SendDiscard(Card discardMe)
+    void SendDiscard(Card discardMe, int logged)
     {
         listOfPlay.Remove(discardMe);
         listOfHand.Remove(discardMe);
-        SortHand();
-        SortPlay();
 
         discardMe.transform.SetParent(Manager.instance.discard);
         StartCoroutine(discardMe.MoveCard(new Vector2(-2000, -330), new Vector3(0, 0, 0), 0.3f));
+        Log.instance.AddText($"{this.name} discards {discardMe.name}.", logged);
+
+        SortHand();
+        SortPlay();
     }
 
     [PunRPC]
-    public void RequestDraw(int cardsToDraw)
+    public void RequestDraw(int cardsToDraw, int logged)
     {
         int[] cardIDs = new int[cardsToDraw];
         Card[] listOfDraw = new Card[cardsToDraw];
@@ -180,22 +182,22 @@ public class Player : MonoBehaviour
         }
 
         if (PhotonNetwork.IsConnected)
-            pv.RPC(nameof(SendDraw), RpcTarget.All, cardIDs);
+            pv.RPC(nameof(SendDraw), RpcTarget.All, cardIDs, logged);
         else
-            AddToHand(listOfDraw);
+            AddToHand(listOfDraw, logged);
     }
 
     [PunRPC]
-    void SendDraw(int[] cardIDs)
+    void SendDraw(int[] cardIDs, int logged)
     {
         Card[] listOfCards = new Card[cardIDs.Length];
         for (int i = 0; i < cardIDs.Length; i++)
             listOfCards[i] = PhotonView.Find(cardIDs[i]).gameObject.GetComponent<Card>();
 
-        AddToHand(listOfCards);
+        AddToHand(listOfCards, logged);
     }
 
-    void AddToHand(Card[] listOfCards)
+    void AddToHand(Card[] listOfCards, int logged)
     {
         for (int i = 0; i < listOfCards.Length; i++)
         {
@@ -207,12 +209,12 @@ public class Player : MonoBehaviour
 
             if (!PhotonNetwork.IsConnected || this.pv.AmOwner)
             {
-                Log.instance.AddText($"{this.name} draws {newCard.name}.");
+                Log.instance.AddText($"{this.name} draws {newCard.name}.", logged);
                 StartCoroutine(newCard.RevealCard(0.3f));
             }
             else
             {
-                Log.instance.AddText($"{this.name} draws 1 Card.");
+                Log.instance.AddText($"{this.name} draws 1 Card.", logged);
             }
         }
         SortHand();
@@ -222,6 +224,7 @@ public class Player : MonoBehaviour
     {
         float firstCalc = Mathf.Round(canvas.transform.localScale.x * 4) / 4f;
         float multiplier = firstCalc / 0.25f;
+        listOfHand = listOfHand.OrderBy(card => card.dataFile.coinCost).ToList();
         UpdateButton();
 
         for (int i = 0; i < listOfHand.Count; i++)
@@ -229,6 +232,7 @@ public class Player : MonoBehaviour
             Card nextCard = listOfHand[i];
             float startingX = (listOfHand.Count > 7) ? (-250 - (150 * multiplier)) : (listOfHand.Count - 1) * (-50 - 25 * multiplier);
             float difference = (listOfHand.Count > 7) ? (-250 - (150 * multiplier)) * -2 / (listOfHand.Count - 1) : 100 + (50 * multiplier);
+
             Vector2 newPosition = new(startingX + difference * i, -535 * canvas.transform.localScale.x);
             StartCoroutine(nextCard.MoveCard(newPosition, nextCard.transform.localEulerAngles, 0.3f));
         }
@@ -282,7 +286,7 @@ public class Player : MonoBehaviour
             StartCoroutine(card.RevealCard(0.3f));
     }
 
-    public IEnumerator ChooseCardToPlay(List<Card> cardsToPlay, List<Card> cardsToReplace)
+    public IEnumerator ChooseCardToPlay(List<Card> cardsToPlay, List<Card> cardsToReplace, int logged)
     {
         if (cardsToPlay.Count == 0)
             yield break;
@@ -298,22 +302,22 @@ public class Player : MonoBehaviour
                 Manager.instance.instructions.text = "Choose a card to replace.";
                 yield return ChooseCard(cardsToReplace, false);
                 Card cardToDiscard = chosenCard;
-                DiscardRPC(cardToDiscard);
-                yield return cardToDiscard.ReplaceInstructions(this);
+                DiscardRPC(cardToDiscard, logged);
+                yield return cardToDiscard.ReplaceInstructions(this, logged+1);
             }
 
             if (PhotonNetwork.IsConnected)
-                pv.RPC(nameof(PhotonViewToPlay), RpcTarget.All, cardToPlay.pv.ViewID);
+                pv.RPC(nameof(PhotonViewToPlay), RpcTarget.All, cardToPlay.pv.ViewID, logged);
             else
-                AddToPlayArea(cardToPlay);
+                AddToPlayArea(cardToPlay, logged);
 
-            MultiFunction(nameof(LoseCoin), RpcTarget.All, new object[1] { cardToPlay.dataFile.coinCost });
+            MultiFunction(nameof(LoseCoin), RpcTarget.All, new object[2] { cardToPlay.dataFile.coinCost, logged });
             yield return new WaitForSeconds(0.25f);
-            yield return cardToPlay.CommandInstructions(this);
+            yield return cardToPlay.CommandInstructions(this, logged+1);
         }
     }
 
-    void AddToPlayArea(Card card)
+    void AddToPlayArea(Card card, int logged)
     {
         card.name = card.name.Replace("(Clone)", "");
         card.cg.alpha = 1;
@@ -323,36 +327,38 @@ public class Player : MonoBehaviour
         listOfPlay.Add(card);
         card.transform.SetParent(cardplay);
 
-        LoseCoin(card.dataFile.coinCost);
-        Log.instance.AddText($"{this.name} plays {card.name}.");
+        LoseCoin(card.dataFile.coinCost, logged);
+        Log.instance.AddText($"{this.name} plays {card.name}.", logged);
+
+        SortHand();
         SortPlay();
     }
 
     [PunRPC]
-    void PhotonViewToPlay(int cardID)
+    void PhotonViewToPlay(int cardID, int logged)
     {
-        AddToPlayArea(PhotonView.Find(cardID).GetComponent<Card>());
+        AddToPlayArea(PhotonView.Find(cardID).GetComponent<Card>(), logged);
     }
 
     [PunRPC]
-    public Card CreateDudRPC(bool addToPlay)
+    public Card CreateJunkRPC(bool addToPlay, int logged)
     {
-        Card newDud = null;
+        Card newJunk = null;
 
         if (PhotonNetwork.IsConnected)
         {
-            newDud = PhotonNetwork.Instantiate(dudPrefab.name, Vector3.zero, new Quaternion()).GetComponent<Card>();
+            newJunk = PhotonNetwork.Instantiate(junkPrefab.name, Vector3.zero, new Quaternion()).GetComponent<Card>();
             if (addToPlay)
-                pv.RPC(nameof(PhotonViewToPlay), RpcTarget.All, newDud.pv.ViewID);
+                pv.RPC(nameof(PhotonViewToPlay), RpcTarget.All, newJunk.pv.ViewID, logged);
         }
         else
         {
-            newDud = Instantiate(dudPrefab);
+            newJunk = Instantiate(junkPrefab);
             if (addToPlay)
-                AddToPlayArea(newDud);
+                AddToPlayArea(newJunk, logged);
         }
 
-        return newDud;
+        return newJunk;
     }
 
     #endregion
@@ -360,38 +366,38 @@ public class Player : MonoBehaviour
 #region Resources
 
     [PunRPC]
-    public void GainCoin(int coins)
+    public void GainCoin(int coins, int logged)
     {
         this.coins += coins;
         if (coins > 0)
-            Log.instance.AddText($"{this.name} gains {coins} Coin.");
+            Log.instance.AddText($"{this.name} gains {coins} Coin.", logged);
         UpdateButton();
     }
 
     [PunRPC]
-    public void LoseCoin(int coins)
+    public void LoseCoin(int coins, int logged)
     {
         this.coins = Mathf.Max(this.coins - coins, 0);
         if (coins > 0)
-        Log.instance.AddText($"{this.name} loses {coins} Coin.");
+        Log.instance.AddText($"{this.name} loses {coins} Coin.", logged);
         UpdateButton();
     }
 
     [PunRPC]
-    public void TakeNegCrown(int crowns)
+    public void TakeNegCrown(int crowns, int logged)
     {
         this.negCrowns += crowns;
         if (crowns > 0)
-            Log.instance.AddText($"{this.name} takes -{crowns} Neg Crown.");
+            Log.instance.AddText($"{this.name} takes -{crowns} Neg Crown.", logged);
         UpdateButton();
     }
 
     [PunRPC]
-    public void RemoveNegCrown(int crowns)
+    public void RemoveNegCrown(int crowns, int logged)
     {
         this.negCrowns = Mathf.Max(this.negCrowns - crowns, 0);
         if (crowns > 0)
-            Log.instance.AddText($"{this.name} removes -{crowns} Neg Crown.");
+            Log.instance.AddText($"{this.name} removes -{crowns} Neg Crown.", logged);
         UpdateButton();
     }
 
@@ -426,14 +432,15 @@ public class Player : MonoBehaviour
 
             Card actionToUse = popup.chosenCard;
             Destroy(popup.gameObject);
-            yield return actionToUse.CommandInstructions(this);
+            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{this.name} uses {actionToUse.name}.", 0 });
+            yield return actionToUse.CommandInstructions(this, 0);
 
             int currentCards = cardsPlayed.Count;
             Manager.instance.instructions.text = "Play a new card (or add a Dud).";
-            yield return ChooseCardToPlay(listOfHand.Where(card => card.dataFile.coinCost <= coins).ToList(), new());
+            yield return ChooseCardToPlay(listOfHand.Where(card => card.dataFile.coinCost <= coins).ToList(), new(), 0);
 
             if (currentCards == cardsPlayed.Count)
-                CreateDudRPC(true);
+                CreateJunkRPC(true, 0);
 
             MultiFunction(nameof(EndTurn), RpcTarget.All, new object[1] { Manager.instance.listOfActions.FindIndex(action => action == actionToUse) });
         }
@@ -485,7 +492,7 @@ public class Player : MonoBehaviour
                 while (choice == -10)
                 {
                     yield return null;
-                    if (optional && popup == null)
+                    if (optional && popup.chosenButton > -10)
                         break;
                 }
             }
