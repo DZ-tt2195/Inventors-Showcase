@@ -76,7 +76,7 @@ public class Card : MonoBehaviour
         this.name = dataFile.cardName;
         this.gameObject.GetComponent<CardLayout>().FillInCards(this.dataFile, this.originalSprite);
 
-        GetMethods(dataFile.commandInstructions);
+        GetMethods(dataFile.playInstructions);
         GetMethods(dataFile.replaceInstructions);
     }
 
@@ -163,7 +163,7 @@ public class Card : MonoBehaviour
 
     public IEnumerator CommandInstructions(Player player, int logged)
     {
-        yield return ResolveInstructions(dataFile.commandInstructions, player, logged);
+        yield return ResolveInstructions(dataFile.playInstructions, player, logged);
     }
 
     public IEnumerator ReplaceInstructions(Player player, int logged)
@@ -399,14 +399,6 @@ public class Card : MonoBehaviour
     {
         yield return null;
         if (player.lastUsedAction == null || !player.lastUsedAction.name.Equals("Upgrade"))
-            MultiFunction(nameof(StopInstructions), RpcTarget.All);
-        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
-    }
-
-    IEnumerator LastUsedSpecial(Player player, int logged)
-    {
-        yield return null;
-        if (player.lastUsedAction == null || player.lastUsedAction != Manager.instance.listOfActions[^1])
             MultiFunction(nameof(StopInstructions), RpcTarget.All);
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }

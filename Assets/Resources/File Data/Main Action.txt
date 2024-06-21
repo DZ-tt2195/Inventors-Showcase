@@ -5,19 +5,20 @@
       "coinCost",
       "scoringCrowns",
       "whoToTarget",
-      "commandInstructions",
+      "playInstructions",
       "replaceInstructions",
       "numDraw",
       "numGain",
       "numCrowns",
       "numPlayCost",
       "numMisc",
+      "eventTimes",
       "artCredit",
       "isDirector"
     ],
     [
       "Brainstorm",
-      "MAIN ACTION: Draw 2 Card.",
+      "Draw 2 Card.",
       "",
       "",
       "You",
@@ -29,11 +30,12 @@
       "",
       "",
       "",
+      "",
       "FALSE"
     ],
     [
       "Stockpile",
-      "MAIN ACTION: Gain 4 Coin.",
+      "Gain 4 Coin.",
       "",
       "",
       "You",
@@ -45,11 +47,12 @@
       "",
       "",
       "",
+      "",
       "FALSE"
     ],
     [
       "Upgrade",
-      "MAIN ACTION: Replace 1 Card.",
+      "Replace 1 Card.",
       "",
       "",
       "You",
@@ -59,6 +62,7 @@
       "",
       "",
       "0",
+      "",
       "",
       "",
       "FALSE"

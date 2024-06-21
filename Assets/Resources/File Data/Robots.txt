@@ -5,13 +5,14 @@
       "coinCost",
       "scoringCrowns",
       "whoToTarget",
-      "commandInstructions",
+      "playInstructions",
       "replaceInstructions",
       "numDraw",
       "numGain",
       "numCrowns",
       "numPlayCost",
       "numMisc",
+      "eventTimes",
       "artCredit",
       "isDirector"
     ],
@@ -29,6 +30,7 @@
       "",
       "",
       "",
+      "",
       "FALSE"
     ],
     [
@@ -40,6 +42,7 @@
       "",
       "DrawCards",
       "3",
+      "",
       "",
       "",
       "",
@@ -61,6 +64,7 @@
       "0",
       "",
       "",
+      "",
       "FALSE"
     ],
     [
@@ -74,6 +78,7 @@
       "",
       "",
       "3",
+      "",
       "",
       "",
       "",
@@ -93,6 +98,7 @@
       "",
       "",
       "",
+      "",
       "FALSE"
     ],
     [
@@ -109,6 +115,7 @@
       "0",
       "5",
       "",
+      "",
       "FALSE"
     ],
     [
@@ -120,6 +127,7 @@
       "DrawCards-DrawCards",
       "",
       "1",
+      "",
       "",
       "",
       "",
@@ -141,6 +149,7 @@
       "",
       "",
       "",
+      "",
       "FALSE"
     ],
     [
@@ -157,11 +166,12 @@
       "",
       "",
       "",
+      "",
       "FALSE"
     ],
     [
       "Drilling Robot",
-      "Replace a non-Dud with a Dud. If you do, gain $5.",
+      "Replace a non-Dud with a Dud. If you do, gain 5 Coin.",
       "2",
       "2",
       "You",
@@ -169,6 +179,7 @@
       "",
       "",
       "5",
+      "",
       "",
       "",
       "",
@@ -189,21 +200,6 @@
       "5",
       "",
       "",
-      "FALSE"
-    ],
-    [
-      "Robot Specialist",
-      "PLAY: If you used the Special Action on your previous turn, gain 4 Coin.",
-      "5",
-      "3",
-      "You",
-      "LastUsedSpecial/GainCoins",
-      "",
-      "",
-      "4",
-      "",
-      "",
-      "",
       "",
       "FALSE"
     ],
@@ -217,6 +213,7 @@
       "",
       "",
       "4",
+      "",
       "",
       "",
       "",
@@ -237,6 +234,7 @@
       "",
       "4",
       "",
+      "",
       "FALSE"
     ],
     [
@@ -253,11 +251,12 @@
       "",
       "3",
       "",
+      "",
       "FALSE"
     ],
     [
       "Robot Villain",
-      "PLAY: Each other player takes -1 Neg Crown, or -2 Neg Crown if they have $10 or more.",
+      "PLAY: Each other player takes -1 Neg Crown, or -2 Neg Crown if they have 10 Coin or more.",
       "8",
       "3",
       "Others",
@@ -269,6 +268,7 @@
       "",
       "10",
       "",
+      "",
       "FALSE"
     ],
     [
@@ -278,6 +278,7 @@
       "4",
       "You",
       "None",
+      "",
       "",
       "",
       "",

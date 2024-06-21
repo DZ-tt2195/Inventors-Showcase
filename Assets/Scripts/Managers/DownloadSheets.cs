@@ -15,7 +15,7 @@ public class CardData
     public string textBox;
     public int coinCost;
     public int scoringCrowns;
-    public string[] commandInstructions;
+    public string[] playInstructions;
     public string[] replaceInstructions;
     public int numDraw;
     public int numGain;
@@ -25,6 +25,7 @@ public class CardData
     public bool isDirector;
     public string artCredit;
     public PlayerTarget[] whoToTarget;
+    public List<int> eventTimes;
 }
 
 public enum PlayerTarget { You, All, Others }
@@ -39,8 +40,8 @@ public class DownloadSheets : MonoBehaviour
 
     Dictionary<string, int> cardSheetsColumns = new();
     [ReadOnly] public List<CardData> mainActionData = new();
-    [ReadOnly] public List<CardData> specialActionData = new();
     [ReadOnly] public List<CardData> robotData = new();
+    [ReadOnly] public List<CardData> eventData = new();
 
     private void Awake()
     {
@@ -66,16 +67,16 @@ public class DownloadSheets : MonoBehaviour
         {
             CoroutineGroup group = new(this);
             group.StartCoroutine(Download("Main Action"));
-            group.StartCoroutine(Download("Special Action"));
             group.StartCoroutine(Download("Robots"));
+            group.StartCoroutine(Download("Events"));
 
             while (group.AnyProcessing)
                 yield return null;
         }
 
         mainActionData = ReadCardData("Main Action");
-        specialActionData = ReadCardData("Special Action");
         robotData = ReadCardData("Robots");
+        eventData = ReadCardData("Events");
     }
 
     IEnumerator Download(string range)
@@ -146,8 +147,8 @@ public class DownloadSheets : MonoBehaviour
             nextData.coinCost = StringToInt(data[i][cardSheetsColumns[nameof(CardData.coinCost)]]);
             nextData.scoringCrowns = StringToInt(data[i][cardSheetsColumns[nameof(CardData.scoringCrowns)]]);
 
-            string nextRow = data[i][cardSheetsColumns[nameof(CardData.commandInstructions)]];
-            nextData.commandInstructions = (nextRow == "") ? new string[1] { "None" } : SpliceString(nextRow, '-');
+            string nextRow = data[i][cardSheetsColumns[nameof(CardData.playInstructions)]];
+            nextData.playInstructions = (nextRow == "") ? new string[1] { "None" } : SpliceString(nextRow, '-');
 
             nextRow = data[i][cardSheetsColumns[nameof(CardData.replaceInstructions)]];
             nextData.replaceInstructions = (nextRow == "") ? new string[1] { "None" } : SpliceString(nextRow, '-');
@@ -161,11 +162,26 @@ public class DownloadSheets : MonoBehaviour
             nextData.isDirector = data[i][cardSheetsColumns[nameof(CardData.isDirector)]] == "TRUE";
             nextData.artCredit = data[i][cardSheetsColumns[nameof(CardData.artCredit)]];
 
-            string[] listOfTargets = (data[i][cardSheetsColumns[nameof(CardData.whoToTarget)]].Equals("") ? new string[1] { "None" } : SpliceString(data[i][cardSheetsColumns[nameof(CardData.whoToTarget)]].Trim().ToUpper(), '-'));
+            string[] listOfTargets = (data[i][cardSheetsColumns[nameof(CardData.whoToTarget)]].Equals("") ? new string[1] { "None" } :
+                SpliceString(data[i][cardSheetsColumns[nameof(CardData.whoToTarget)]].Trim().ToUpper(), '-'));
             PlayerTarget[] convertToTargets = new PlayerTarget[listOfTargets.Length];
             for (int j = 0; j < listOfTargets.Length; j++)
                 convertToTargets[j] = StringToPlayerTarget(listOfTargets[j]);
             nextData.whoToTarget = convertToTargets;
+
+            string[] arrayOfInts = (data[i][cardSheetsColumns[nameof(CardData.eventTimes)]].Equals("") ? null :
+                SpliceString(data[i][cardSheetsColumns[nameof(CardData.eventTimes)]].Trim().ToUpper(), '-'));
+            if (arrayOfInts == null)
+            {
+                nextData.eventTimes = new();
+            }
+            else
+            {
+                List<int> listOfInts = new();
+                for (int j = 0; j < arrayOfInts.Length; j++)
+                    listOfInts.Add(StringToInt(arrayOfInts[j]));
+                nextData.eventTimes = listOfInts;
+            }
         }
 
         return listOfData;

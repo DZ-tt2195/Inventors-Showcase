@@ -8,6 +8,7 @@ using TMPro;
 
 public class CardLayout : MonoBehaviour, IPointerClickHandler
 {
+    CardData dataFile;
     [ReadOnly] public CanvasGroup cg;
     TMP_Text titleText;
     TMP_Text descriptionText;
@@ -15,22 +16,35 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
     TMP_Text coinText;
     TMP_Text crownText;
     Image artBox;
-    CardData dataFile;
+    List<CanvasGroup> listOfClocks = new(); 
 
     private void Awake()
     {
         cg = transform.Find("Canvas Group").GetComponent<CanvasGroup>();
+        titleText = cg.transform.Find("Title").GetComponent<TMP_Text>();
+        descriptionText = cg.transform.Find("Description").GetComponent<TMP_Text>();
+        artBox = cg.transform.Find("Art Box").GetComponent<Image>();
+        artText = cg.transform.Find("Art Credit").GetComponent<TMP_Text>();
+
         try
         {
-            titleText = cg.transform.Find("Title").GetComponent<TMP_Text>();
-            descriptionText = cg.transform.Find("Description").GetComponent<TMP_Text>();
-            artBox = cg.transform.Find("Art Box").GetComponent<Image>();
-            artText = cg.transform.Find("Art Credit").GetComponent<TMP_Text>();
             coinText = cg.transform.Find("Coin").GetComponent<TMP_Text>();
             crownText = cg.transform.Find("Crown").GetComponent<TMP_Text>();
         }
         catch
         {
+
+        }
+
+        try
+        {
+            Transform clockTransform = cg.transform.Find("Bundle of Clocks");
+            foreach (Transform child in clockTransform)
+                listOfClocks.Add(child.GetComponent<CanvasGroup>());
+        }
+        catch
+        {
+
         }
     }
 
@@ -52,6 +66,7 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
 
         artText.text = dataFile.artCredit;
         artBox.sprite = sprite;
+        artBox.color = Color.red;
 
         if (coinText != null)
         {
@@ -80,6 +95,9 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
                 crownText.gameObject.SetActive(false);
             }
         }
+
+        for (int i = 0; i<listOfClocks.Count; i++)
+            listOfClocks[i].alpha = dataFile.eventTimes.Contains(i + 1) ? 1 : 0.25f;
     }
 
     void RightClickInfo()

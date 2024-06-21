@@ -16,6 +16,7 @@ public class CarryVariables : MonoBehaviour
     public Player playerPrefab;
     public Robot robotPrefab;
     public Action actionPrefab;
+    public Event eventPrefab;
     public Popup cardPopup;
     public Popup textPopup;
 

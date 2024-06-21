@@ -97,7 +97,7 @@ public class Player : MonoBehaviour
         this.playerPosition = position;
         storePlayers = GameObject.Find("Store Players").transform;
         this.transform.SetParent(storePlayers);
-        this.transform.localPosition = new Vector3(-280 + 2500 * this.playerPosition, 0, 0);
+        this.transform.localPosition = new Vector3(2500 * this.playerPosition, 0, 0);
 
         Button newButton = Instantiate(playerButtonPrefab, Vector3.zero, new Quaternion());
         newButton.transform.SetParent(this.transform.parent.parent);
@@ -230,6 +230,7 @@ public class Player : MonoBehaviour
         for (int i = 0; i < listOfHand.Count; i++)
         {
             Card nextCard = listOfHand[i];
+            nextCard.transform.SetSiblingIndex(i);
             float startingX = (listOfHand.Count > 7) ? (-250 - (150 * multiplier)) : (listOfHand.Count - 1) * (-50 - 25 * multiplier);
             float difference = (listOfHand.Count > 7) ? (-250 - (150 * multiplier)) * -2 / (listOfHand.Count - 1) : 100 + (50 * multiplier);
 
@@ -240,7 +241,7 @@ public class Player : MonoBehaviour
         if (!PhotonNetwork.IsConnected || this.pv.AmOwner)
         {
             foreach (Card card in listOfHand)
-                StartCoroutine(card.RevealCard(0.3f));
+                StartCoroutine(card.RevealCard(0.25f));
         }
     }
 
@@ -259,7 +260,8 @@ public class Player : MonoBehaviour
             try
             {
                 Card nextCard = listOfPlay[i];
-                Vector2 newPosition = new(-500 + (62.5f * multiplier * i), 300 * canvas.transform.localScale.x);
+                nextCard.transform.SetSiblingIndex(i);
+                Vector2 newPosition = new(-800 + (62.5f * multiplier * i), 175 * canvas.transform.localScale.x);
                 StartCoroutine(nextCard.MoveCard(newPosition, nextCard.transform.localEulerAngles, 0.3f));
             }
             catch
@@ -272,8 +274,8 @@ public class Player : MonoBehaviour
             try
             {
                 Card nextCard = listOfPlay[i+6];
-                float xPosition = -750 + (300 * multiplier * i);
-                Vector2 newPosition = new(-500 + (62.5f * multiplier * i), -90 * canvas.transform.localScale.x);
+                nextCard.transform.SetSiblingIndex(i+6);
+                Vector2 newPosition = new(-800 + (62.5f * multiplier * i), -185 * canvas.transform.localScale.x);
                 StartCoroutine(nextCard.MoveCard(newPosition, nextCard.transform.localEulerAngles, 0.3f));
             }
             catch
@@ -283,7 +285,7 @@ public class Player : MonoBehaviour
         }
 
         foreach (Card card in listOfPlay)
-            StartCoroutine(card.RevealCard(0.3f));
+            StartCoroutine(card.RevealCard(0.25f));
     }
 
     public IEnumerator ChooseCardToPlay(List<Card> cardsToPlay, List<Card> cardsToReplace, int logged)
@@ -403,7 +405,7 @@ public class Player : MonoBehaviour
 
     #endregion
 
-#region Turn
+#region Turn/Decisions
 
     public IEnumerator TakeTurnRPC(int turnNumber)
     {

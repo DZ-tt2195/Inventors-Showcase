@@ -25,6 +25,7 @@ public class Manager : MonoBehaviour
     public Transform deck;
     public Transform discard;
     public Transform actions;
+    public Transform events;
 
     [Foldout("Animation", true)]
     [ReadOnly] public float opacity = 1;
@@ -34,6 +35,7 @@ public class Manager : MonoBehaviour
     [Foldout("Lists", true)]
     [ReadOnly] public List<Player> playersInOrder = new();
     [ReadOnly] public List<Action> listOfActions = new();
+    [ReadOnly] public List<Event> listOfEvents = new();
     [ReadOnly] public Dictionary<string, MethodInfo> dictionary = new();
 
     #endregion
@@ -96,8 +98,10 @@ public class Manager : MonoBehaviour
         {
             Player solitairePlayer = Instantiate(CarryVariables.instance.playerPrefab, new Vector3(-10000, -10000, 0), new Quaternion());
             solitairePlayer.name = "Solitaire";
+
             GetPlayers();
             CreateEmployees();
+            CreateEvents();
             CreateActions();
             StartCoroutine(PlayUntilFinish());
         }
@@ -115,8 +119,10 @@ public class Manager : MonoBehaviour
         {
             yield return new WaitForSeconds(0.5f);
             GetPlayers();
+
             CreateEmployees();
             CreateActions();
+            CreateEvents();
             StartCoroutine(PlayUntilFinish());
         }
     }
@@ -185,25 +191,44 @@ public class Manager : MonoBehaviour
                 nextCard.GetDataFile(i);
             }
         }
+    }
 
-        Action specialAction;
-        int randomIndex = DownloadSheets.instance.mainActionData.Count + Random.Range(0, DownloadSheets.instance.specialActionData.Count);
+    void CreateEvents()
+    {
+        DownloadSheets.instance.eventData = DownloadSheets.instance.eventData.Shuffle();
+        Event nextCard = null;
         if (PhotonNetwork.IsConnected)
         {
-            specialAction = PhotonNetwork.Instantiate(CarryVariables.instance.actionPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Action>();
-            specialAction.pv.RPC("GetDataFile", RpcTarget.All, randomIndex);
+            nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.eventPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Event>();
+            nextCard.pv.RPC("GetDataFile", RpcTarget.All, 0);
         }
         else
         {
-            specialAction = Instantiate(CarryVariables.instance.actionPrefab, new Vector3(-10000, -10000), new Quaternion());
-            specialAction.GetDataFile(randomIndex);
+            nextCard = Instantiate(CarryVariables.instance.eventPrefab, new Vector3(-10000, -10000), new Quaternion());
+            nextCard.GetDataFile(0);
         }
 
+        /*
+        for (int i = 0; i < 2; i++)
+        {
+            Event nextCard = null;
+            if (PhotonNetwork.IsConnected)
+            {
+                nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.eventPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Event>();
+                nextCard.pv.RPC("GetDataFile", RpcTarget.All, i);
+            }
+            else
+            {
+                nextCard = Instantiate(CarryVariables.instance.eventPrefab, new Vector3(-10000, -10000), new Quaternion());
+                nextCard.GetDataFile(i);
+            }
+        }
+        */
     }
 
     #endregion
 
-#region Gameplay
+    #region Gameplay
 
     IEnumerator PlayUntilFinish()
     {

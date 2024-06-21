@@ -160,7 +160,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -30, y: 0}
-  m_SizeDelta: {x: 640, y: 1440}
+  m_SizeDelta: {x: 640, y: 1045}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &203774335
 MonoBehaviour:
@@ -273,11 +273,13 @@ MonoBehaviour:
   deck: {fileID: 270349799}
   discard: {fileID: 1127216486}
   actions: {fileID: 1689440781}
+  events: {fileID: 1255223579}
   opacity: 1
   decrease: 1
   gameOn: 0
   playersInOrder: []
   listOfActions: []
+  listOfEvents: []
 --- !u!4 &204503846
 Transform:
   m_ObjectHideFlags: 0
@@ -591,6 +593,7 @@ RectTransform:
   m_Children:
   - {fileID: 675451491}
   - {fileID: 1910369952}
+  - {fileID: 1255223579}
   - {fileID: 715611900}
   - {fileID: 776689323}
   m_Father: {fileID: 0}
@@ -732,8 +735,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 950, y: 0}
-  m_SizeDelta: {x: 700, y: 1440}
+  m_AnchoredPosition: {x: 950, y: 190}
+  m_SizeDelta: {x: 700, y: 1045}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &675451492
 MonoBehaviour:
@@ -886,8 +889,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -200, y: 600}
-  m_SizeDelta: {x: 1300, y: 100}
+  m_AnchoredPosition: {x: 140, y: 617.54736}
+  m_SizeDelta: {x: 825, y: 135}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &715611901
 MonoBehaviour:
@@ -1060,6 +1063,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1255223578
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1255223579}
+  m_Layer: 0
+  m_Name: Events
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1255223579
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1255223578}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 369914992}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1477417362
 GameObject:
@@ -1314,7 +1348,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1300, y: 100}
+  m_SizeDelta: {x: 825, y: 135}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2044377633
 MonoBehaviour:
