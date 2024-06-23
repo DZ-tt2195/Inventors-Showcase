@@ -90,7 +90,7 @@ GameObject:
   - component: {fileID: 1352310326918728418}
   - component: {fileID: 3959410726379243997}
   - component: {fileID: 2836353488892948198}
-  - component: {fileID: 5020457997579925402}
+  - component: {fileID: 7319543648406363931}
   m_Layer: 0
   m_Name: Robot
   m_TagString: Untagged
@@ -250,7 +250,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Active: 0
   Target: {fileID: 8277740059764732275}
---- !u!114 &5020457997579925402
+--- !u!114 &7319543648406363931
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -259,7 +259,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1761235060413094877}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9948d88f824894bd8a4ac1b948f4ec04, type: 3}
+  m_Script: {fileID: 11500000, guid: a7a4e9802b3a5448ebbd8ebe6444559e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   pv: {fileID: 0}
@@ -268,7 +268,7 @@ MonoBehaviour:
     textBox: 
     coinCost: 0
     scoringCrowns: 0
-    commandInstructions: []
+    playInstructions: []
     replaceInstructions: []
     numDraw: 0
     numGain: 0
@@ -278,9 +278,9 @@ MonoBehaviour:
     isDirector: 0
     artCredit: 
     whoToTarget: 
+    eventTimes: 
   button: {fileID: 0}
   cg: {fileID: 0}
-  faceDownSprite: {fileID: 0}
   originalSprite: {fileID: 0}
   border: {fileID: 8607025200229986181}
 --- !u!1 &2187997424273689458

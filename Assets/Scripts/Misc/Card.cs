@@ -71,7 +71,36 @@ public class Card : MonoBehaviour
     }
 
     [PunRPC]
-    public virtual void GetDataFile(int fileSlot)
+    public void GetActionFile(int fileSlot)
+    {
+        this.dataFile = DownloadSheets.instance.mainActionData[fileSlot];
+        this.transform.SetParent(Manager.instance.actions);
+        Manager.instance.listOfActions.Add(this);
+        this.originalSprite = Resources.Load<Sprite>($"Action/{this.dataFile.cardName}");
+        OtherSetup();
+    }
+
+    [PunRPC]
+    public void GetEventFile(int fileSlot)
+    {
+        this.dataFile = DownloadSheets.instance.eventData[fileSlot];
+        this.transform.SetParent(Manager.instance.events);
+        this.transform.localPosition = new Vector3(-800 + 250 * fileSlot, 525);
+        Manager.instance.listOfEvents.Add(this);
+        this.originalSprite = Resources.Load<Sprite>($"Event/{this.dataFile.cardName}");
+        OtherSetup();
+    }
+
+    [PunRPC]
+    public void GetRobotFile(int fileSlot)
+    {
+        this.dataFile = DownloadSheets.instance.robotData[fileSlot];
+        this.transform.SetParent(Manager.instance.deck);
+        this.originalSprite = Resources.Load<Sprite>($"Robot/{this.dataFile.cardName}");
+        OtherSetup();
+    }
+
+    void OtherSetup()
     {
         this.name = dataFile.cardName;
         this.gameObject.GetComponent<CardLayout>().FillInCards(this.dataFile, this.originalSprite);
@@ -159,7 +188,7 @@ public class Card : MonoBehaviour
 
     #endregion
 
-#region Instructions
+#region Follow Instructions
 
     public IEnumerator CommandInstructions(Player player, int logged)
     {
@@ -235,6 +264,10 @@ public class Card : MonoBehaviour
         }
     }
 
+    #endregion
+
+#region Steps
+
     IEnumerator DrawCards(Player player, int logged)
     {
         yield return null;
@@ -286,9 +319,9 @@ public class Card : MonoBehaviour
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
-    IEnumerator ReplaceNonDudWithDud(Player player, int logged)
+    IEnumerator ReplaceNonJunkWithJunk(Player player, int logged)
     {
-        List<Card> cardsToReplace = player.listOfPlay.Where(card => card.name != "Dud").ToList();
+        List<Card> cardsToReplace = player.listOfPlay.Where(card => card.name != "Junk").ToList();
         if (cardsToReplace.Count == 0)
         {
             player.chosenCard = null;
@@ -355,6 +388,10 @@ public class Card : MonoBehaviour
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
+    #endregion
+
+#region Booleans
+
     IEnumerator HandOrMore(Player player, int logged)
     {
         yield return null;
@@ -415,6 +452,20 @@ public class Card : MonoBehaviour
     {
         yield return null;
         if (player.chosenCard == null)
+            MultiFunction(nameof(StopInstructions), RpcTarget.All);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator YesOrNo(Player player, int logged)
+    {
+        Popup popup = Instantiate(CarryVariables.instance.textPopup);
+        popup.transform.SetParent(GameObject.Find("Canvas").transform);
+        popup.StatsSetup(this.name, Vector3.zero);
+        popup.AddTextButton("Yes");
+        popup.AddTextButton("No");
+
+        yield return popup.WaitForChoice();
+        if (popup.chosenButton == 1)
             MultiFunction(nameof(StopInstructions), RpcTarget.All);
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }

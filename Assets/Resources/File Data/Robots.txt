@@ -171,11 +171,11 @@
     ],
     [
       "Drilling Robot",
-      "Replace a non-Dud with a Dud. If you do, gain 5 Coin.",
+      "PLAY: Replace a non-Junk card with Junk. If you do, gain 5 Coin.",
       "2",
       "2",
       "You",
-      "ReplaceNonDudWithDud/ChosenCard/GainCoins",
+      "ReplaceNonJunkWithJunk/ChosenCard/GainCoins",
       "",
       "",
       "5",

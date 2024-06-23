@@ -2134,9 +2134,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 8107050060095843924, guid: 8552ffe2815504ba6bdbebb2664acac5, type: 3}
-  robotPrefab: {fileID: 5020457997579925402, guid: 3de7ea5a0b51444a58b1b274a1c8b5a6, type: 3}
-  actionPrefab: {fileID: 4563540877604993386, guid: 7273cc60c20f94f81a5a0fe5ab9834df, type: 3}
-  eventPrefab: {fileID: 1628382543562354461, guid: fe9d6cfe784a741229d4191673318873, type: 3}
+  robotPrefab: {fileID: 7319543648406363931, guid: 3de7ea5a0b51444a58b1b274a1c8b5a6, type: 3}
+  actionPrefab: {fileID: 5322478089425048206, guid: 7273cc60c20f94f81a5a0fe5ab9834df, type: 3}
+  eventPrefab: {fileID: 8224391216268596772, guid: fe9d6cfe784a741229d4191673318873, type: 3}
   cardPopup: {fileID: 3183939439193871304, guid: 293c9a8a887c64616a8e499c379c4cd7, type: 3}
   textPopup: {fileID: 7594585533340515175, guid: 0ce383b7ea8ca488c810cadf3b089e7e, type: 3}
   rightClickBackground: {fileID: 496367183}

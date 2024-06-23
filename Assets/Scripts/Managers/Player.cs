@@ -42,7 +42,7 @@ public class Player : MonoBehaviour
         public Dictionary<string, MethodInfo> dictionary = new();
         [ReadOnly] public int choice;
         [ReadOnly] public Card chosenCard;
-        [ReadOnly] public Action lastUsedAction;
+        [ReadOnly] public Card lastUsedAction;
 
     #endregion
 
@@ -158,6 +158,9 @@ public class Player : MonoBehaviour
 
         SortHand();
         SortPlay();
+
+        if (PhotonNetwork.IsConnected && discardMe.pv.AmOwner)
+            PhotonNetwork.Destroy(discardMe.pv);
     }
 
     [PunRPC]
@@ -199,6 +202,7 @@ public class Player : MonoBehaviour
 
     void AddToHand(Card[] listOfCards, int logged)
     {
+        string cardList = "";
         for (int i = 0; i < listOfCards.Length; i++)
         {
             Card newCard = listOfCards[i];
@@ -208,16 +212,16 @@ public class Player : MonoBehaviour
             listOfHand.Add(newCard);
 
             if (!PhotonNetwork.IsConnected || this.pv.AmOwner)
-            {
-                Log.instance.AddText($"{this.name} draws {newCard.name}.", logged);
                 StartCoroutine(newCard.RevealCard(0.3f));
-            }
-            else
-            {
-                Log.instance.AddText($"{this.name} draws 1 Card.", logged);
-            }
+
+            cardList += $"{newCard.name}{(i < listOfCards.Length - 1 ? ", " : ".")}";
         }
         SortHand();
+
+        if (!PhotonNetwork.IsConnected || this.pv.AmOwner)
+            Log.instance.AddText($"{this.name} draws {cardList}", logged);
+        else
+            Log.instance.AddText($"{this.name} draws {listOfCards.Length} Card.");
     }
 
     public void SortHand()
@@ -423,24 +427,43 @@ public class Player : MonoBehaviour
 
         if (!PhotonNetwork.IsConnected || this.pv.IsMine)
         {
-            Popup popup = Instantiate(CarryVariables.instance.cardPopup);
-            popup.transform.SetParent(this.transform);
-            popup.StatsSetup("Choose an action.", Vector3.zero);
+            //start of turn events
+            List<Card> startOfTurnEvents = Manager.instance.listOfEvents.Where
+                (card => (card.dataFile.textBox.StartsWith("START OF TURN")
+                && Manager.instance.ActiveEvent(card.dataFile.cardName))).ToList();
+            while (startOfTurnEvents.Count > 0)
+            {
+                Popup eventPopup = Instantiate(CarryVariables.instance.cardPopup);
+                eventPopup.StatsSetup("Choose an event to resolve.", Vector3.zero);
+                foreach (Card next in startOfTurnEvents)
+                    eventPopup.AddCardButton(next, 1);
+                yield return eventPopup.WaitForChoice();
+
+                Card eventToResolve = eventPopup.chosenCard;
+                Destroy(eventPopup.gameObject);
+                startOfTurnEvents.Remove(eventToResolve);
+                yield return eventToResolve.CommandInstructions(this, 0);
+            }
+
+            //choosing actions
+            Popup actionPopup = Instantiate(CarryVariables.instance.cardPopup);
+            actionPopup.transform.SetParent(this.transform);
+            actionPopup.StatsSetup("Choose an action.", Vector3.zero);
             Manager.instance.instructions.text = "Choose an action.";
 
-            foreach (Action action in Manager.instance.listOfActions)
-                popup.AddCardButton(action, 1);
-            yield return popup.WaitForChoice();
+            foreach (Card action in Manager.instance.listOfActions)
+                actionPopup.AddCardButton(action, 1);
+            yield return actionPopup.WaitForChoice();
 
-            Card actionToUse = popup.chosenCard;
-            Destroy(popup.gameObject);
+            Card actionToUse = actionPopup.chosenCard;
+            Destroy(actionPopup.gameObject);
             Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{this.name} uses {actionToUse.name}.", 0 });
             yield return actionToUse.CommandInstructions(this, 0);
 
+            //playing new card
             int currentCards = cardsPlayed.Count;
-            Manager.instance.instructions.text = "Play a new card (or add a Dud).";
+            Manager.instance.instructions.text = "Play a new card (or add a Junk).";
             yield return ChooseCardToPlay(listOfHand.Where(card => card.dataFile.coinCost <= coins).ToList(), new(), 0);
-
             if (currentCards == cardsPlayed.Count)
                 CreateJunkRPC(true, 0);
 
@@ -468,7 +491,7 @@ public class Player : MonoBehaviour
             if (optional)
             {
                 popup = Instantiate(CarryVariables.instance.textPopup);
-                popup.transform.SetParent(this.transform);
+                popup.transform.SetParent(GameObject.Find("Canvas").transform);
                 popup.StatsSetup("Decline?", Vector3.zero);
                 popup.AddTextButton("Decline");
                 StartCoroutine(popup.WaitForChoice());

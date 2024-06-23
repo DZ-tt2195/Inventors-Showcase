@@ -116,6 +116,5 @@ public class Popup : MonoBehaviour
         chosenButton = -10;
         while (chosenButton == -10)
             yield return null;
-        //Debug.Log($"clicked {chosenButton}");
     }
 }

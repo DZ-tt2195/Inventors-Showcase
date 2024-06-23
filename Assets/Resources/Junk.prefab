@@ -240,7 +240,7 @@ MonoBehaviour:
     textBox: 
     coinCost: 0
     scoringCrowns: 0
-    commandInstructions: []
+    playInstructions: []
     replaceInstructions: []
     numDraw: 0
     numGain: 0
@@ -250,9 +250,9 @@ MonoBehaviour:
     isDirector: 0
     artCredit: 
     whoToTarget: 
+    eventTimes: 
   button: {fileID: 0}
   cg: {fileID: 0}
-  faceDownSprite: {fileID: 21300000, guid: c85382f08dc8e4d02b5cb721fd5a1c65, type: 3}
   originalSprite: {fileID: 0}
   border: {fileID: 8607025200229986181}
 --- !u!114 &6401462766861759724

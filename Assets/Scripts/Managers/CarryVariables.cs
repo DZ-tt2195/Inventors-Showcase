@@ -14,9 +14,9 @@ public class CarryVariables : MonoBehaviour
     public static CarryVariables instance;
     [Foldout("Prefabs", true)]
     public Player playerPrefab;
-    public Robot robotPrefab;
-    public Action actionPrefab;
-    public Event eventPrefab;
+    public Card robotPrefab;
+    public Card actionPrefab;
+    public Card eventPrefab;
     public Popup cardPopup;
     public Popup textPopup;
 

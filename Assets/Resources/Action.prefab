@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 4155640907989011003}
   - component: {fileID: 6133385833797075993}
   - component: {fileID: 1352310326918728418}
-  - component: {fileID: 4563540877604993386}
   - component: {fileID: 3959410726379243997}
   - component: {fileID: 6749470621462647328}
+  - component: {fileID: 5322478089425048206}
   m_Layer: 0
   m_Name: Action
   m_TagString: Untagged
@@ -148,39 +148,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &4563540877604993386
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1761235060413094877}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a888693d23401415db6cf0459afebe49, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pv: {fileID: 0}
-  dataFile:
-    cardName: 
-    textBox: 
-    coinCost: 0
-    scoringCrowns: 0
-    commandInstructions: []
-    replaceInstructions: []
-    numDraw: 0
-    numGain: 0
-    numCrowns: 0
-    numPlayCost: 0
-    numMisc: 0
-    isDirector: 0
-    artCredit: 
-    whoToTarget: 
-  button: {fileID: 0}
-  cg: {fileID: 0}
-  faceDownSprite: {fileID: 21300000, guid: c85382f08dc8e4d02b5cb721fd5a1c65, type: 3}
-  originalSprite: {fileID: 0}
-  border: {fileID: 8607025200229986181}
 --- !u!114 &3959410726379243997
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -208,6 +175,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Active: 0
   Target: {fileID: 8277740059764732275}
+--- !u!114 &5322478089425048206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1761235060413094877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7a4e9802b3a5448ebbd8ebe6444559e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pv: {fileID: 0}
+  dataFile:
+    cardName: 
+    textBox: 
+    coinCost: 0
+    scoringCrowns: 0
+    playInstructions: []
+    replaceInstructions: []
+    numDraw: 0
+    numGain: 0
+    numCrowns: 0
+    numPlayCost: 0
+    numMisc: 0
+    isDirector: 0
+    artCredit: 
+    whoToTarget: 
+    eventTimes: 
+  button: {fileID: 0}
+  cg: {fileID: 0}
+  originalSprite: {fileID: 0}
+  border: {fileID: 8607025200229986181}
 --- !u!1 &2326203752505220632
 GameObject:
   m_ObjectHideFlags: 0

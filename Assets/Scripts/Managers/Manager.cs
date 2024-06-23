@@ -33,9 +33,10 @@ public class Manager : MonoBehaviour
     [ReadOnly] public bool gameOn = false;
 
     [Foldout("Lists", true)]
+    [ReadOnly] public int turnNumber;
     [ReadOnly] public List<Player> playersInOrder = new();
-    [ReadOnly] public List<Action> listOfActions = new();
-    [ReadOnly] public List<Event> listOfEvents = new();
+    [ReadOnly] public List<Card> listOfActions = new();
+    [ReadOnly] public List<Card> listOfEvents = new();
     [ReadOnly] public Dictionary<string, MethodInfo> dictionary = new();
 
     #endregion
@@ -100,7 +101,7 @@ public class Manager : MonoBehaviour
             solitairePlayer.name = "Solitaire";
 
             GetPlayers();
-            CreateEmployees();
+            CreateRobots();
             CreateEvents();
             CreateActions();
             StartCoroutine(PlayUntilFinish());
@@ -120,7 +121,7 @@ public class Manager : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
             GetPlayers();
 
-            CreateEmployees();
+            CreateRobots();
             CreateActions();
             CreateEvents();
             StartCoroutine(PlayUntilFinish());
@@ -148,22 +149,22 @@ public class Manager : MonoBehaviour
         nextPlayer.AssignInfo(position);
     }
 
-    void CreateEmployees()
+    void CreateRobots()
     {
         for (int i = 0; i < DownloadSheets.instance.robotData.Count; i++)
         {
             for (int j = 0; j < 2; j++)
             {
-                Robot nextCard = null;
+                Card nextCard = null;
                 if (PhotonNetwork.IsConnected)
                 {
-                    nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.robotPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Robot>();
-                    nextCard.pv.RPC("GetDataFile", RpcTarget.All, i);
+                    nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.robotPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Card>();
+                    nextCard.pv.RPC("GetRobotFile", RpcTarget.All, i);
                 }
                 else
                 {
                     nextCard = Instantiate(CarryVariables.instance.robotPrefab, new Vector3(-10000, -10000), new Quaternion());
-                    nextCard.GetDataFile(i);
+                    nextCard.GetRobotFile(i);
                 }
             }
         }
@@ -179,16 +180,16 @@ public class Manager : MonoBehaviour
     {
         for (int i = 0; i < DownloadSheets.instance.mainActionData.Count; i++)
         {
-            Action nextCard = null;
+            Card nextCard = null;
             if (PhotonNetwork.IsConnected)
             {
-                nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.actionPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Action>();
-                nextCard.pv.RPC("GetDataFile", RpcTarget.All, i);
+                nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.actionPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Card>();
+                nextCard.pv.RPC("GetActionFile", RpcTarget.All, i);
             }
             else
             {
                 nextCard = Instantiate(CarryVariables.instance.actionPrefab, new Vector3(-10000, -10000), new Quaternion());
-                nextCard.GetDataFile(i);
+                nextCard.GetActionFile(i);
             }
         }
     }
@@ -196,16 +197,16 @@ public class Manager : MonoBehaviour
     void CreateEvents()
     {
         DownloadSheets.instance.eventData = DownloadSheets.instance.eventData.Shuffle();
-        Event nextCard = null;
+        Card nextCard = null;
         if (PhotonNetwork.IsConnected)
         {
-            nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.eventPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Event>();
-            nextCard.pv.RPC("GetDataFile", RpcTarget.All, 0);
+            nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.eventPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Card>();
+            nextCard.pv.RPC("GetEventFile", RpcTarget.All, 0);
         }
         else
         {
             nextCard = Instantiate(CarryVariables.instance.eventPrefab, new Vector3(-10000, -10000), new Quaternion());
-            nextCard.GetDataFile(0);
+            nextCard.GetEventFile(0);
         }
 
         /*
@@ -214,13 +215,13 @@ public class Manager : MonoBehaviour
             Event nextCard = null;
             if (PhotonNetwork.IsConnected)
             {
-                nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.eventPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Event>();
-                nextCard.pv.RPC("GetDataFile", RpcTarget.All, i);
+                nextCard = PhotonNetwork.Instantiate(CarryVariables.instance.eventPrefab.name, new Vector3(-10000, -10000), new Quaternion()).GetComponent<Card>();
+                nextCard.pv.RPC("GetEventFile", RpcTarget.All, i);
             }
             else
             {
                 nextCard = Instantiate(CarryVariables.instance.eventPrefab, new Vector3(-10000, -10000), new Quaternion());
-                nextCard.GetDataFile(i);
+                nextCard.GetEventFile(i);
             }
         }
         */
@@ -228,20 +229,33 @@ public class Manager : MonoBehaviour
 
     #endregion
 
-    #region Gameplay
+#region Gameplay
 
     IEnumerator PlayUntilFinish()
     {
         gameOn = true;
 
-        for (int j = 0; j < 10; j++)
+        for (int j = 1; j <= 10; j++)
         {
+            MultiFunction(nameof(UpdateTurnNumber), RpcTarget.All, new object[1] { j });
             foreach (Player player in playersInOrder)
             {
-                yield return player.TakeTurnRPC(j+1);
+                yield return player.TakeTurnRPC(j);
                 yield return new WaitForSeconds(0.25f);
             }
         }
+    }
+
+    [PunRPC]
+    void UpdateTurnNumber(int number)
+    {
+        turnNumber = number;
+    }
+
+    public bool ActiveEvent(string eventName)
+    {
+        Card foundEvent = listOfEvents.Find(card => card.dataFile.cardName == eventName);
+        return foundEvent != null && foundEvent.dataFile.eventTimes.Contains(turnNumber);
     }
 
     #endregion

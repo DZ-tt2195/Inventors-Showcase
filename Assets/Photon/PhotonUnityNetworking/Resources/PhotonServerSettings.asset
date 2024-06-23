@@ -19,7 +19,7 @@ MonoBehaviour:
     AppIdVoice: 
     AppVersion: 
     UseNameServer: 1
-    FixedRegion: 
+    FixedRegion: usw
     Server: 
     Port: 0
     ProxyServer: 
@@ -61,6 +61,10 @@ MonoBehaviour:
   - SelectedAction
   - StopInstructions
   - CreateJunkRPC
+  - UpdateTurnNumber
+  - GetActionFile
+  - GetEventFile
+  - GetRobotFile
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 0
