@@ -170,7 +170,7 @@ public class DownloadSheets : MonoBehaviour
             nextData.whoToTarget = convertToTargets;
 
             string[] arrayOfInts = (data[i][cardSheetsColumns[nameof(CardData.eventTimes)]].Equals("") ? null :
-                SpliceString(data[i][cardSheetsColumns[nameof(CardData.eventTimes)]].Trim().ToUpper(), '-'));
+                SpliceString(data[i][cardSheetsColumns[nameof(CardData.eventTimes)]].Trim().ToUpper(), ','));
             if (arrayOfInts == null)
             {
                 nextData.eventTimes = new();

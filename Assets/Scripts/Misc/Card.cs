@@ -81,13 +81,14 @@ public class Card : MonoBehaviour
     }
 
     [PunRPC]
-    public void GetEventFile(int fileSlot)
+    public void GetEventFile(int slot, string card)
     {
-        this.dataFile = DownloadSheets.instance.eventData[fileSlot];
+        this.dataFile = DownloadSheets.instance.eventData.Find(file => file.cardName == card);
         this.transform.SetParent(Manager.instance.events);
-        this.transform.localPosition = new Vector3(-800 + 250 * fileSlot, 525);
+        this.transform.localPosition = new Vector3(-800 + 250 * slot, 525);
         Manager.instance.listOfEvents.Add(this);
         this.originalSprite = Resources.Load<Sprite>($"Event/{this.dataFile.cardName}");
+        Log.instance.AddText($"Using {this.dataFile.cardName}.");
         OtherSetup();
     }
 

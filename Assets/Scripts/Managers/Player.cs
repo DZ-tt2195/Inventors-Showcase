@@ -159,6 +159,9 @@ public class Player : MonoBehaviour
         SortHand();
         SortPlay();
 
+        if (Manager.instance.ActiveEvent("Recycling"))
+            GainCoin(1, logged);
+
         if (PhotonNetwork.IsConnected && discardMe.pv.AmOwner)
             PhotonNetwork.Destroy(discardMe.pv);
     }
@@ -446,17 +449,26 @@ public class Player : MonoBehaviour
             }
 
             //choosing actions
-            Popup actionPopup = Instantiate(CarryVariables.instance.cardPopup);
-            actionPopup.transform.SetParent(this.transform);
-            actionPopup.StatsSetup("Choose an action.", Vector3.zero);
-            Manager.instance.instructions.text = "Choose an action.";
+            Card actionToUse = null;
+            if (Manager.instance.ActiveEvent("Repairs"))
+            {
+                actionToUse = Manager.instance.listOfEvents.Find(card => card.dataFile.cardName == "Upgrade");
+            }
+            else
+            {
+                Popup actionPopup = Instantiate(CarryVariables.instance.cardPopup);
+                actionPopup.transform.SetParent(this.transform);
+                actionPopup.StatsSetup("Choose an action.", Vector3.zero);
+                Manager.instance.instructions.text = "Choose an action.";
 
-            foreach (Card action in Manager.instance.listOfActions)
-                actionPopup.AddCardButton(action, 1);
-            yield return actionPopup.WaitForChoice();
+                foreach (Card action in Manager.instance.listOfActions)
+                    actionPopup.AddCardButton(action, 1);
+                yield return actionPopup.WaitForChoice();
 
-            Card actionToUse = actionPopup.chosenCard;
-            Destroy(actionPopup.gameObject);
+                actionToUse = actionPopup.chosenCard;
+                Destroy(actionPopup.gameObject);
+            }
+
             Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{this.name} uses {actionToUse.name}.", 0 });
             yield return actionToUse.CommandInstructions(this, 0);
 
