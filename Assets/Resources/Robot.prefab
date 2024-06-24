@@ -236,6 +236,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cg: {fileID: 0}
+  background: {fileID: 6357875579845760358}
 --- !u!114 &2836353488892948198
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -281,6 +282,7 @@ MonoBehaviour:
     eventTimes: 
   button: {fileID: 0}
   cg: {fileID: 0}
+  background: {fileID: 6357875579845760358}
   originalSprite: {fileID: 0}
   border: {fileID: 8607025200229986181}
 --- !u!1 &2187997424273689458

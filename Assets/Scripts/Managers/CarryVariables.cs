@@ -81,10 +81,10 @@ public class CarryVariables : MonoBehaviour
             rightClickBackground.gameObject.SetActive(false);
     }
 
-    public void RightClickDisplay(float alpha, Sprite sprite, CardData dataFile)
+    public void RightClickDisplay(float alpha, Sprite sprite, CardData dataFile, Color color)
     {
         rightClickBackground.gameObject.SetActive(true);
         cg.alpha = alpha;
-        rightClickCard.FillInCards(dataFile, sprite);
+        rightClickCard.FillInCards(dataFile, sprite, color);
     }
 }

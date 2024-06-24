@@ -10,6 +10,7 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
 {
     CardData dataFile;
     [ReadOnly] public CanvasGroup cg;
+    [SerializeField] Image background;
     TMP_Text titleText;
     TMP_Text descriptionText;
     TMP_Text artText;
@@ -56,10 +57,18 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    public void FillInCards(CardData dataFile, Sprite sprite)
+    public void FillInCards(CardData dataFile, Sprite sprite, Color color)
     {
         this.dataFile = dataFile;
 
+        try
+        {
+            background.color = color;
+        }
+        catch
+        {
+            Debug.LogError($"{this.name} has no background");
+        }
         titleText.text = dataFile.cardName;
         descriptionText.text = dataFile.textBox;
         descriptionText.text = KeywordTooltip.instance.EditText(descriptionText.text);
@@ -109,6 +118,6 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
 
     void RightClickInfo()
     {
-        CarryVariables.instance.RightClickDisplay(cg.alpha, (artBox != null) ? artBox.sprite : null, this.dataFile);
+        CarryVariables.instance.RightClickDisplay(cg.alpha, (artBox != null) ? artBox.sprite : null, this.dataFile, background.color);
     }
 }

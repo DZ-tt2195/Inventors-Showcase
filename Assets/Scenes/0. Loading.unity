@@ -7409,6 +7409,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cg: {fileID: 0}
+  background: {fileID: 6357875581793735036}
 --- !u!114 &4155640906715762209
 MonoBehaviour:
   m_ObjectHideFlags: 0

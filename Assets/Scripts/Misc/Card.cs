@@ -22,6 +22,7 @@ public class Card : MonoBehaviour
 
     [Foldout("Art", true)]
         [ReadOnly] public CanvasGroup cg;
+        public Image background;
         [ReadOnly] public Sprite originalSprite;
         public Image border;
 
@@ -104,7 +105,7 @@ public class Card : MonoBehaviour
     void OtherSetup()
     {
         this.name = dataFile.cardName;
-        this.gameObject.GetComponent<CardLayout>().FillInCards(this.dataFile, this.originalSprite);
+        this.gameObject.GetComponent<CardLayout>().FillInCards(this.dataFile, this.originalSprite, background.color);
 
         GetMethods(dataFile.playInstructions);
         GetMethods(dataFile.replaceInstructions);
@@ -191,7 +192,7 @@ public class Card : MonoBehaviour
 
 #region Follow Instructions
 
-    public IEnumerator CommandInstructions(Player player, int logged)
+    public IEnumerator PlayInstructions(Player player, int logged)
     {
         yield return ResolveInstructions(dataFile.playInstructions, player, logged);
     }
@@ -386,6 +387,32 @@ public class Card : MonoBehaviour
                 player.DiscardRPC(player.chosenCard, logged);
             }
         }
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator ChooseFromPlay(Player player, int logged)
+    {
+        yield return player.ChooseCard(player.listOfPlay, false);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator ChooseFromHand(Player player, int logged)
+    {
+        yield return player.ChooseCard(player.listOfHand, false);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator DoPlayAbility(Player player, int logged)
+    {
+        if (player.chosenCard != null && !player.chosenCard.dataFile.isDirector)
+            yield return player.chosenCard.PlayInstructions(player, logged + 1);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator DoReplaceAbility(Player player, int logged)
+    {
+        if (player.chosenCard != null && !player.chosenCard.dataFile.isDirector)
+            yield return player.chosenCard.ReplaceInstructions(player, logged + 1);
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 

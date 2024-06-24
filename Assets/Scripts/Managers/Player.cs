@@ -306,13 +306,13 @@ public class Player : MonoBehaviour
         if (chosenCard != null)
         {
             Card cardToPlay = chosenCard;
+            Card cardToDiscard = null;
             if (cardsToReplace.Count > 0)
             {
                 Manager.instance.instructions.text = "Choose a card to replace.";
                 yield return ChooseCard(cardsToReplace, false);
-                Card cardToDiscard = chosenCard;
+                cardToDiscard = chosenCard;
                 DiscardRPC(cardToDiscard, logged);
-                yield return cardToDiscard.ReplaceInstructions(this, logged+1);
             }
 
             if (PhotonNetwork.IsConnected)
@@ -322,7 +322,9 @@ public class Player : MonoBehaviour
 
             MultiFunction(nameof(LoseCoin), RpcTarget.All, new object[2] { cardToPlay.dataFile.coinCost, logged });
             yield return new WaitForSeconds(0.25f);
-            yield return cardToPlay.CommandInstructions(this, logged+1);
+            if (cardToDiscard != null)
+                yield return cardToDiscard.ReplaceInstructions(this, logged + 1);
+            yield return cardToPlay.PlayInstructions(this, logged+1);
         }
     }
 
@@ -445,7 +447,7 @@ public class Player : MonoBehaviour
                 Card eventToResolve = eventPopup.chosenCard;
                 Destroy(eventPopup.gameObject);
                 startOfTurnEvents.Remove(eventToResolve);
-                yield return eventToResolve.CommandInstructions(this, 0);
+                yield return eventToResolve.PlayInstructions(this, 0);
             }
 
             //choosing actions
@@ -470,7 +472,7 @@ public class Player : MonoBehaviour
             }
 
             Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{this.name} uses {actionToUse.name}.", 0 });
-            yield return actionToUse.CommandInstructions(this, 0);
+            yield return actionToUse.PlayInstructions(this, 0);
 
             //playing new card
             int currentCards = cardsPlayed.Count;
