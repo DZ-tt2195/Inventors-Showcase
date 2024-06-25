@@ -99,6 +99,8 @@ public class Card : MonoBehaviour
         this.dataFile = DownloadSheets.instance.robotData[fileSlot];
         this.transform.SetParent(Manager.instance.deck);
         this.originalSprite = Resources.Load<Sprite>($"Robot/{this.dataFile.cardName}");
+        if (dataFile.isDirector)
+            background.color = Color.black;
         OtherSetup();
     }
 
@@ -194,12 +196,18 @@ public class Card : MonoBehaviour
 
     public IEnumerator PlayInstructions(Player player, int logged)
     {
-        yield return ResolveInstructions(dataFile.playInstructions, player, logged);
+        if (player.ignoreInstructions > 0)
+            Log.instance.pv.RPC(nameof(Log.instance.AddText), RpcTarget.All, $"{this.name} ignores {this.name}'s instructions.", logged);
+        else
+            yield return ResolveInstructions(dataFile.playInstructions, player, logged);
     }
 
     public IEnumerator ReplaceInstructions(Player player, int logged)
     {
-        yield return ResolveInstructions(dataFile.replaceInstructions, player, logged);
+        if (player.ignoreInstructions > 0)
+            Log.instance.pv.RPC(nameof(Log.instance.AddText), RpcTarget.All, $"{this.name} ignores {this.name}'s instructions.", logged);
+        else
+            yield return ResolveInstructions(dataFile.replaceInstructions, player, logged);
     }
 
     [PunRPC]
@@ -413,6 +421,13 @@ public class Card : MonoBehaviour
     {
         if (player.chosenCard != null && !player.chosenCard.dataFile.isDirector)
             yield return player.chosenCard.ReplaceInstructions(player, logged + 1);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator IgnoreUntilTurn(Player player, int logged)
+    {
+        yield return null;
+        player.MultiFunction(nameof(player.IgnoreUntilTurn), RpcTarget.All, new object[1] { dataFile.numMisc });
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 

@@ -43,8 +43,9 @@ public class Player : MonoBehaviour
         [ReadOnly] public int choice;
         [ReadOnly] public Card chosenCard;
         [ReadOnly] public Card lastUsedAction;
+        [ReadOnly] public int ignoreInstructions = 0;
 
-    #endregion
+#endregion
 
 #region Setup
 
@@ -412,6 +413,13 @@ public class Player : MonoBehaviour
         UpdateButton();
     }
 
+    [PunRPC]
+    public void IgnoreUntilTurn(int amount)
+    {
+        if (amount > ignoreInstructions)
+            ignoreInstructions = amount;
+    }
+
     #endregion
 
 #region Turn/Decisions
@@ -491,6 +499,7 @@ public class Player : MonoBehaviour
         lastUsedAction = Manager.instance.listOfActions[chosenAction];
         myTurn = false;
         cardsPlayed.Clear();
+        ignoreInstructions = Mathf.Max(0, ignoreInstructions - 1);
     }
 
     public IEnumerator ChooseCard(List<Card> possibleCards, bool optional)

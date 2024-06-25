@@ -86,7 +86,7 @@
     ],
     [
       "Repairs",
-      "You have to use Upgrade. (Even if you have 0 Card.)",
+      "You have to use Upgrade (even if you have 0 Card in hand).",
       "",
       "",
       "You",
@@ -115,6 +115,23 @@
       "",
       "",
       "2,4,6,8,10",
+      "",
+      "FALSE"
+    ],
+    [
+      "Thunderstorm",
+      "START OF TURN: Ignore instructions on Card you play or replace this turn.",
+      "",
+      "",
+      "You",
+      "IgnoreUntilTurn",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "1",
+      "4,8",
       "",
       "FALSE"
     ]

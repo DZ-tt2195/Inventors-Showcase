@@ -85,6 +85,23 @@
       "FALSE"
     ],
     [
+      "Doubling Robot",
+      "REPLACE: Repeat the PLAY abilities of 1 Card you've in play twice.",
+      "2",
+      "1",
+      "You",
+      "",
+      "ChooseFromPlay/DoPlayAbility/DoPlayAbility",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "TRUE"
+    ],
+    [
       "Delivery Drone",
       "PLAY: Draw 3 Card and take -1 Neg Crown.",
       "3",
@@ -183,6 +200,23 @@
       "",
       "",
       "",
+      "",
+      "FALSE"
+    ],
+    [
+      "Computer Virus",
+      "PLAY: During their next turn, other players ignore instructions on Card they play or replace.",
+      "6",
+      "3",
+      "Others",
+      "IgnoreUntilTurn",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "1",
       "",
       "FALSE"
     ],
