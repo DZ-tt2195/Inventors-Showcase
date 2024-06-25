@@ -327,23 +327,43 @@ public class Player : MonoBehaviour
                 yield return cardToDiscard.ReplaceInstructions(this, logged + 1);
             yield return cardToPlay.PlayInstructions(this, logged+1);
         }
+        else
+        {
+            MultiFunction(nameof(FailToPlay), RpcTarget.All, new object[1] { logged });
+        }
     }
 
     void AddToPlayArea(Card card, int logged)
     {
-        card.name = card.name.Replace("(Clone)", "");
-        card.cg.alpha = 1;
+        if (card == null)
+        {
+            cardsPlayed.Add(null);
+            Log.instance.AddText($"{this.name} doesn't play anything.", logged);
+            SortHand();
+            SortPlay();
+        }
+        else
+        {
+            card.name = card.name.Replace("(Clone)", "");
+            card.cg.alpha = 1;
 
-        cardsPlayed.Add(card);
-        listOfHand.Remove(card);
-        listOfPlay.Add(card);
-        card.transform.SetParent(cardplay);
+            cardsPlayed.Add(card);
+            listOfHand.Remove(card);
+            listOfPlay.Add(card);
+            card.transform.SetParent(cardplay);
 
-        LoseCoin(card.dataFile.coinCost, logged);
-        Log.instance.AddText($"{this.name} plays {card.name}.", logged);
+            LoseCoin(card.dataFile.coinCost, logged);
+            Log.instance.AddText($"{this.name} plays {card.name}.", logged);
 
-        SortHand();
-        SortPlay();
+            SortHand();
+            SortPlay();
+        }
+    }
+
+    [PunRPC]
+    void FailToPlay(int logged)
+    {
+        AddToPlayArea(null, logged);
     }
 
     [PunRPC]
@@ -437,6 +457,7 @@ public class Player : MonoBehaviour
     {
         Log.instance.AddText($"");
         Log.instance.AddText($"Turn {turnNumber} - {this.name}");
+        cardsPlayed.Clear();
 
         if (!PhotonNetwork.IsConnected || this.pv.IsMine)
         {
@@ -468,7 +489,7 @@ public class Player : MonoBehaviour
             {
                 Popup actionPopup = Instantiate(CarryVariables.instance.cardPopup);
                 actionPopup.transform.SetParent(this.transform);
-                actionPopup.StatsSetup("Choose an action.", Vector3.zero);
+                actionPopup.StatsSetup("Actions", Vector3.zero);
                 Manager.instance.instructions.text = "Choose an action.";
 
                 foreach (Card action in Manager.instance.listOfActions)

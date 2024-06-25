@@ -515,4 +515,39 @@ public class Card : MonoBehaviour
 
     #endregion
 
+#region Setters
+
+    [PunRPC]
+    void SetAllStats(int number)
+    {
+        float multiplier = (dataFile.numMisc > 0) ? dataFile.numMisc : -1 / dataFile.numMisc;
+        dataFile.numDraw = (int)Mathf.Floor(number * multiplier);
+        dataFile.numGain = (int)Mathf.Floor(number * multiplier);
+        dataFile.numCrowns = (int)Mathf.Floor(number * multiplier);
+        dataFile.numPlayCost = (int)Mathf.Floor(number * multiplier);
+    }
+
+    IEnumerator SetToHandSize(Player player, int logged)
+    {
+        yield return null;
+        MultiFunction(nameof(SetAllStats), RpcTarget.All, new object[1] { player.listOfHand.Count });
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator SetToJunk(Player player, int logged)
+    {
+        yield return null;
+        MultiFunction(nameof(SetAllStats), RpcTarget.All, new object[1] { player.listOfPlay.Where(card => card.name == "Junk").ToList().Count });
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator SetChosenToLastPlay(Player player, int logged)
+    {
+        if (player.cardsPlayed[^1] != null)
+            yield return player.ChooseCard(new() { player.cardsPlayed[^1] }, false);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    #endregion
+
 }
