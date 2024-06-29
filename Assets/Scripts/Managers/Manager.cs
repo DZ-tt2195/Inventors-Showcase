@@ -39,6 +39,11 @@ public class Manager : MonoBehaviour
     [ReadOnly] public List<Card> listOfEvents = new();
     [ReadOnly] public Dictionary<string, MethodInfo> dictionary = new();
 
+    [Foldout("Ending", true)]
+    [SerializeField] Transform endScreen;
+    [SerializeField] TMP_Text scoreText;
+    [SerializeField] Button quitGame;
+
     #endregion
 
 #region Setup
@@ -49,7 +54,7 @@ public class Manager : MonoBehaviour
         pv = GetComponent<PhotonView>();
     }
 
-    protected void MultiFunction(string methodName, RpcTarget affects, object[] parameters = null)
+    public void MultiFunction(string methodName, RpcTarget affects, object[] parameters = null)
     {
         if (!dictionary.ContainsKey(methodName))
             AddToDictionary(methodName);
@@ -60,7 +65,7 @@ public class Manager : MonoBehaviour
             dictionary[methodName].Invoke(this, parameters);
     }
 
-    protected IEnumerator MultiEnumerator(string methodName, RpcTarget affects, object[] parameters = null)
+    public IEnumerator MultiEnumerator(string methodName, RpcTarget affects, object[] parameters = null)
     {
         if (!dictionary.ContainsKey(methodName))
             AddToDictionary(methodName);
@@ -231,6 +236,8 @@ public class Manager : MonoBehaviour
                 yield return new WaitForSeconds(0.25f);
             }
         }
+
+        MultiFunction(nameof(DisplayEnding), RpcTarget.All, new object[1] { -1 });
     }
 
     [PunRPC]
@@ -253,5 +260,62 @@ public class Manager : MonoBehaviour
     }
 
     #endregion
+
+#region Game End
+
+    [PunRPC]
+    public void DisplayEnding(int resignPosition)
+    {
+        StopCoroutine(nameof(PlayUntilFinish));
+        endScreen.gameObject.SetActive(true);
+        quitGame.onClick.AddListener(Leave);
+
+        Popup[] allPopups = FindObjectsOfType<Popup>();
+        foreach (Popup popup in allPopups)
+            Destroy(popup.gameObject);
+
+        List<Player> playerScoresInOrder = playersInOrder.OrderByDescending(player => player.CalculateScore()).ToList();
+        int nextPlacement = 1;
+        scoreText.text = "";
+
+        Log.instance.AddText("");
+        Log.instance.AddText("The game has ended.");
+        Player resignPlayer = null;
+        if (resignPosition >= 0)
+        {
+            resignPlayer = playersInOrder[resignPosition];
+            Log.instance.AddText($"{resignPlayer.name} has resigned.");
+        }
+
+        for (int i = 0; i<playerScoresInOrder.Count; i++)
+        {
+            Player player = playerScoresInOrder[i];
+            if (player != resignPlayer)
+            {
+                scoreText.text += $"{nextPlacement}: {player.name}: {player.CalculateScore()} Pos Crown\n";
+                if (i == 0 || playerScoresInOrder[i - 1].CalculateScore() != player.CalculateScore())
+                    nextPlacement++;
+            }
+        }
+
+        if (resignPlayer != null)
+            scoreText.text += $"\nResigned: {resignPlayer.name}: {resignPlayer.CalculateScore()} Pos Crown";
+        scoreText.text = KeywordTooltip.instance.EditText(scoreText.text);
+    }
+
+    void Leave()
+    {
+        if (PhotonNetwork.IsConnected)
+        {
+            PhotonNetwork.LeaveRoom();
+            SceneManager.LoadScene("1. Lobby");
+        }
+        else
+        {
+            SceneManager.LoadScene("0. Loading");
+        }
+    }
+
+#endregion
 
 }

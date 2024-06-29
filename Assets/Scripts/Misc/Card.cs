@@ -197,7 +197,7 @@ public class Card : MonoBehaviour
     public IEnumerator PlayInstructions(Player player, int logged)
     {
         if (player.ignoreInstructions > 0)
-            Log.instance.pv.RPC(nameof(Log.instance.AddText), RpcTarget.All, $"{this.name} ignores {this.name}'s instructions.", logged);
+            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{this.name} ignores {this.name}'s instructions.", logged });
         else
             yield return ResolveInstructions(dataFile.playInstructions, player, logged);
     }
@@ -205,7 +205,7 @@ public class Card : MonoBehaviour
     public IEnumerator ReplaceInstructions(Player player, int logged)
     {
         if (player.ignoreInstructions > 0)
-            Log.instance.pv.RPC(nameof(Log.instance.AddText), RpcTarget.All, $"{this.name} ignores {this.name}'s instructions.", logged);
+            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{this.name} ignores {this.name}'s instructions.", logged });
         else
             yield return ResolveInstructions(dataFile.replaceInstructions, player, logged);
     }
@@ -414,6 +414,8 @@ public class Card : MonoBehaviour
     {
         if (player.chosenCard != null && !player.chosenCard.dataFile.isDirector)
             yield return player.chosenCard.PlayInstructions(player, logged + 1);
+        else
+            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{player.chosenCard} can't be done by directors.", logged });
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
@@ -421,6 +423,8 @@ public class Card : MonoBehaviour
     {
         if (player.chosenCard != null && !player.chosenCard.dataFile.isDirector)
             yield return player.chosenCard.ReplaceInstructions(player, logged + 1);
+        else
+            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{player.chosenCard} can't be done by directors." , logged});
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 

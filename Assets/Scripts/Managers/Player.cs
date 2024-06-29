@@ -37,6 +37,7 @@ public class Player : MonoBehaviour
         [ReadOnly] public List<Card> cardsPlayed = new();
         TMP_Text buttonText;
         Transform storePlayers;
+        Button resignButton;
 
     [Foldout("Choices", true)]
         public Dictionary<string, MethodInfo> dictionary = new();
@@ -56,6 +57,12 @@ public class Player : MonoBehaviour
             pv.Owner.NickName = PlayerPrefs.GetString("Online Username");
 
         canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
+        resignButton = GameObject.Find("Resign Button").GetComponent<Button>();
+    }
+
+    void ResignTime()
+    {
+        Manager.instance.MultiFunction(nameof(Manager.instance.DisplayEnding), RpcTarget.All, new object[1] { this.playerPosition });
     }
 
     private void Start()
@@ -96,6 +103,7 @@ public class Player : MonoBehaviour
     internal void AssignInfo(int position)
     {
         this.playerPosition = position;
+        resignButton.onClick.AddListener(ResignTime);
         storePlayers = GameObject.Find("Store Players").transform;
         this.transform.SetParent(storePlayers);
         this.transform.localPosition = new Vector3(2500 * this.playerPosition, 0, 0);
@@ -438,6 +446,14 @@ public class Player : MonoBehaviour
     {
         if (amount > ignoreInstructions)
             ignoreInstructions = amount;
+    }
+
+    public int CalculateScore()
+    {
+        int score = negCrowns;
+        foreach (Card card in listOfPlay)
+            score += card.dataFile.scoringCrowns;
+        return score;
     }
 
     #endregion
