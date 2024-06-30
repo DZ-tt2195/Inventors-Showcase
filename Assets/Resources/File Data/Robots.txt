@@ -120,7 +120,7 @@
     ],
     [
       "Disassembly Robot",
-      "You may replace 1 Card. If you do, take -1 Neg Crown.",
+      "PLAY: You may replace 1 Card. If you do, take -1 Neg Crown.",
       "1",
       "2",
       "You",
@@ -352,6 +352,23 @@
       "",
       "",
       "3",
+      "",
+      "",
+      "FALSE"
+    ],
+    [
+      "Robot Butler",
+      "PLAY: Choose one: +2 Card; or +4 Coin; or replace 1 Card.",
+      "7",
+      "3",
+      "You",
+      "ChooseMethod(DrawCards|GainCoins|ReplaceCardOrMore)",
+      "",
+      "2",
+      "4",
+      "",
+      "0",
+      "",
       "",
       "",
       "FALSE"

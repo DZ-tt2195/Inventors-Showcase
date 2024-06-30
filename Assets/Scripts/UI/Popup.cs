@@ -48,7 +48,7 @@ public class Popup : MonoBehaviour
     internal void AddTextButton(string text)
     {
         Button nextButton = Instantiate(textButton, this.transform.GetChild(1));
-        nextButton.transform.GetChild(0).GetComponent<TMP_Text>().text = text;
+        nextButton.transform.GetChild(0).GetComponent<TMP_Text>().text = KeywordTooltip.instance.EditText(text);
 
         nextButton.interactable = true;
         int buttonNumber = buttonsInCollector.Count;

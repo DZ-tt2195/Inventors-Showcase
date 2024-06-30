@@ -233,17 +233,7 @@ public class Card : MonoBehaviour
             if (dataFile.whoToTarget[i] == PlayerTarget.You)
             {
                 foreach (string methodName in listOfSmallInstructions)
-                {
-                    runningMethod = true;
-                    if (methodName != "None")
-                    {
-                        StartCoroutine((IEnumerator)dictionary[methodName].Invoke(this, new object[2] { player, logged }));
-
-                        while (runningMethod)
-                            yield return null;
-                        if (!runNextMethod) yield break;
-                    }
-                }
+                    yield return RunStep(methodName, player, logged);
             }
             else
             {
@@ -257,20 +247,63 @@ public class Card : MonoBehaviour
                         continue;
 
                     foreach (string methodName in listOfSmallInstructions)
-                    {
-                        runningMethod = true;
-                        if (methodName != "None")
-                        {
-                            StartCoroutine((IEnumerator)dictionary[methodName].Invoke(this, new object[2] { nextPlayer, logged }));
-                            while (runningMethod)
-                                yield return null;
-                            if (!runNextMethod) break;
-                        }
-                    }
+                        yield return RunStep(methodName, nextPlayer, logged);
 
                     playerTracker = (playerTracker == Manager.instance.playersInOrder.Count - 1) ? 0 : playerTracker + 1;
                 }
             }
+        }
+    }
+
+    IEnumerator RunStep(string methodName, Player player, int logged)
+    {
+        runningMethod = true;
+        if (methodName.Equals("None"))
+        {
+
+        }
+        else if (methodName.Contains("ChooseMethod("))
+        {
+            string[] choices = methodName.
+                Replace("ChooseMethod(", "").
+                Replace(")", "").
+                Replace("]", "").
+                Trim().Split('|');
+
+            Popup popup = Instantiate(CarryVariables.instance.textPopup);
+            popup.StatsSetup("Choose an option", Vector3.zero);
+
+            foreach (string next in choices)
+            {
+                switch (next)
+                {
+                    case nameof(DrawCards):
+                        popup.AddTextButton($"+{dataFile.numDraw} Card");
+                        break;
+                    case nameof(GainCoins):
+                        popup.AddTextButton($"+{dataFile.numGain} Coin");
+                        break;
+                    case nameof(ReplaceCardOrMore):
+                        popup.AddTextButton($"Replace 1 Card");
+                        break;
+                    default:
+                        popup.AddTextButton(next);
+                        break;
+                }
+            }
+
+            yield return popup.WaitForChoice();
+            string chosenMethod = choices[popup.chosenButton];
+            Destroy(popup.gameObject);
+            yield return RunStep(chosenMethod, player, logged);
+        }
+        else
+        {
+            StartCoroutine((IEnumerator)dictionary[methodName].Invoke(this, new object[2] { player, logged }));
+
+            while (runningMethod)
+                yield return null;
+            if (!runNextMethod) yield break;
         }
     }
 
