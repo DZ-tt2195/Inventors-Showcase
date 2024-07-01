@@ -18,7 +18,7 @@
     ],
     [
       "Desperation",
-      "START OF TURN: You may take -4 Neg Crown to draw 2 Card and gain 4 Coin.",
+      "START OF TURN: You may take -3 Neg Crown to draw 2 Card and gain 4 Coin.",
       "",
       "",
       "You",
@@ -26,10 +26,10 @@
       "",
       "2",
       "4",
-      "4",
+      "3",
       "",
       "",
-      "1,3,5",
+      "2,4",
       "",
       "FALSE"
     ],

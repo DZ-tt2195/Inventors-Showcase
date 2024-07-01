@@ -42,7 +42,7 @@ public class Card : MonoBehaviour
         cg = transform.Find("Canvas Group").GetComponent<CanvasGroup>();
     }
 
-    protected void MultiFunction(string methodName, RpcTarget affects, object[] parameters = null)
+    void MultiFunction(string methodName, RpcTarget affects, object[] parameters = null)
     {
         if (!dictionary.ContainsKey(methodName))
             AddToDictionary(methodName);
@@ -53,7 +53,7 @@ public class Card : MonoBehaviour
             dictionary[methodName].Invoke(this, parameters);
     }
 
-    protected IEnumerator MultiEnumerator(string methodName, RpcTarget affects, object[] parameters = null)
+    IEnumerator MultiEnumerator(string methodName, RpcTarget affects, object[] parameters = null)
     {
         if (!dictionary.ContainsKey(methodName))
             AddToDictionary(methodName);
@@ -118,16 +118,29 @@ public class Card : MonoBehaviour
         foreach (string nextSection in listOfInstructions)
         {
             string[] nextSplit = DownloadSheets.instance.SpliceString(nextSection.Trim(), '/');
-            foreach (string small in nextSplit)
+            foreach (string methodName in nextSplit)
             {
-                if (small.Equals("None") || small.Equals("") || dictionary.ContainsKey(small))
-                    continue;
+                if (methodName.Equals("None") || methodName.Equals("") || dictionary.ContainsKey(methodName))
+                {
+                }
 
-                MethodInfo method = typeof(Card).GetMethod(small, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                if (method != null && method.ReturnType == typeof(IEnumerator))
-                    dictionary.Add(small, method);
+                else if (methodName.Contains("ChooseMethod("))
+                {
+                    string[] choices = methodName.
+                        Replace("ChooseMethod(", "").
+                        Replace(")", "").
+                        Replace("]", "").
+                        Trim().Split('|');
+                    GetMethods(choices);
+                }
                 else
-                    Debug.LogError($"{dataFile.cardName}: instructions: {small} doesn't exist");
+                {
+                    MethodInfo method = typeof(Card).GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    if (method != null && method.ReturnType == typeof(IEnumerator))
+                        dictionary.Add(methodName, method);
+                    else
+                        Debug.LogError($"{dataFile.cardName}: instructions: {methodName} doesn't exist");
+                }
             }
         }
     }
@@ -196,18 +209,18 @@ public class Card : MonoBehaviour
 
     public IEnumerator PlayInstructions(Player player, int logged)
     {
-        if (player.ignoreInstructions > 0)
-            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{this.name} ignores {this.name}'s instructions.", logged });
-        else
+        if (player.ignoreInstructions == 0 || Manager.instance.listOfActions.Contains(this))
             yield return ResolveInstructions(dataFile.playInstructions, player, logged);
+        else
+            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{this.name} ignores {this.name}'s instructions.", logged });
     }
 
     public IEnumerator ReplaceInstructions(Player player, int logged)
     {
-        if (player.ignoreInstructions > 0)
-            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{this.name} ignores {this.name}'s instructions.", logged });
-        else
+        if (player.ignoreInstructions == 0 || Manager.instance.listOfActions.Contains(this))
             yield return ResolveInstructions(dataFile.replaceInstructions, player, logged);
+        else
+            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{this.name} ignores {this.name}'s instructions.", logged });
     }
 
     [PunRPC]
@@ -562,20 +575,31 @@ public class Card : MonoBehaviour
         dataFile.numGain = (int)Mathf.Floor(number * multiplier);
         dataFile.numCrowns = (int)Mathf.Floor(number * multiplier);
         dataFile.numPlayCost = (int)Mathf.Floor(number * multiplier);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator SetToHandSize(Player player, int logged)
     {
         yield return null;
         MultiFunction(nameof(SetAllStats), RpcTarget.All, new object[1] { player.listOfHand.Count });
-        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator SetToJunk(Player player, int logged)
     {
         yield return null;
         MultiFunction(nameof(SetAllStats), RpcTarget.All, new object[1] { player.listOfPlay.Where(card => card.name == "Junk").ToList().Count });
-        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator SetToNegCrowns(Player player, int logged)
+    {
+        yield return null;
+        MultiFunction(nameof(SetAllStats), RpcTarget.All, new object[1] { player.negCrowns });
+    }
+
+    IEnumerator SetToCoins(Player player, int logged)
+    {
+        yield return null;
+        MultiFunction(nameof(SetAllStats), RpcTarget.All, new object[1] { player.coins });
     }
 
     IEnumerator SetChosenToLastPlay(Player player, int logged)
