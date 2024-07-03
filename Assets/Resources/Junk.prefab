@@ -253,6 +253,7 @@ MonoBehaviour:
     eventTimes: 
   button: {fileID: 0}
   cg: {fileID: 0}
+  background: {fileID: 0}
   originalSprite: {fileID: 0}
   border: {fileID: 8607025200229986181}
 --- !u!114 &6401462766861759724

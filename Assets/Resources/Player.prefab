@@ -87,6 +87,7 @@ MonoBehaviour:
   choice: 0
   chosenCard: {fileID: 0}
   lastUsedAction: {fileID: 0}
+  ignoreInstructions: 0
 --- !u!1 &6326756469621649633
 GameObject:
   m_ObjectHideFlags: 0

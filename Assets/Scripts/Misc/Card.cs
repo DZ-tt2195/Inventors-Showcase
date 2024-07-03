@@ -299,6 +299,12 @@ public class Card : MonoBehaviour
                     case nameof(ReplaceCardOrMore):
                         popup.AddTextButton($"Replace 1 Card");
                         break;
+                    case nameof(TakeNeg):
+                        popup.AddTextButton($"Take -{dataFile.numCrowns} Neg Crown");
+                        break;
+                    case nameof(MandatoryDiscard):
+                        popup.AddTextButton($"Discard {dataFile.numDraw} Card");
+                        break;
                     default:
                         popup.AddTextButton(next);
                         break;
@@ -459,7 +465,10 @@ public class Card : MonoBehaviour
     IEnumerator DoPlayAbility(Player player, int logged)
     {
         if (player.chosenCard != null && !player.chosenCard.dataFile.isDirector)
+        {
+            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{this.name} does {player.chosenCard}'s PLAY.", logged });
             yield return player.chosenCard.PlayInstructions(player, logged + 1);
+        }
         else
             Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{player.chosenCard} can't be done by directors.", logged });
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
@@ -468,9 +477,12 @@ public class Card : MonoBehaviour
     IEnumerator DoReplaceAbility(Player player, int logged)
     {
         if (player.chosenCard != null && !player.chosenCard.dataFile.isDirector)
+        {
+            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{this.name} does {player.chosenCard}'s REPLACE.", logged });
             yield return player.chosenCard.ReplaceInstructions(player, logged + 1);
+        }
         else
-            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{player.chosenCard} can't be done by directors." , logged});
+            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{player.chosenCard} can't be done.", logged });
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 

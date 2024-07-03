@@ -144,7 +144,7 @@ public class Player : MonoBehaviour
     public void DiscardRPC(Card card, int logged)
     {
         if (PhotonNetwork.IsConnected)
-            pv.RPC(nameof(SendDiscard), RpcTarget.All, card.pv.ViewID);
+            pv.RPC(nameof(SendDiscard), RpcTarget.All, card.pv.ViewID, logged);
         else
             SendDiscard(card, logged);
     }
@@ -172,7 +172,13 @@ public class Player : MonoBehaviour
             GainCoin(1, logged);
 
         if (PhotonNetwork.IsConnected && discardMe.pv.AmOwner)
-            PhotonNetwork.Destroy(discardMe.pv);
+            StartCoroutine(DeleteJunk(discardMe.pv));
+    }
+
+    IEnumerator DeleteJunk(PhotonView junkPV)
+    {
+        yield return new WaitForSeconds(1f);
+        PhotonNetwork.Destroy(junkPV);
     }
 
     [PunRPC]
@@ -316,6 +322,12 @@ public class Player : MonoBehaviour
         {
             Card cardToPlay = chosenCard;
             Card cardToDiscard = null;
+
+            if (chosenCard.name != "Junk" && Manager.instance.ActiveEvent("Depression"))
+            {
+                MultiFunction(nameof(TakeNegCrown), RpcTarget.All, new object[2] { 1, logged+1 });
+            }
+
             if (cardsToReplace.Count > 0)
             {
                 Manager.instance.instructions.text = "Choose a card to replace.";
@@ -347,8 +359,6 @@ public class Player : MonoBehaviour
         {
             cardsPlayed.Add(null);
             Log.instance.AddText($"{this.name} doesn't play anything.", logged);
-            SortHand();
-            SortPlay();
         }
         else
         {
@@ -362,10 +372,9 @@ public class Player : MonoBehaviour
 
             LoseCoin(card.dataFile.coinCost, logged);
             Log.instance.AddText($"{this.name} plays {card.name}.", logged);
-
-            SortHand();
-            SortPlay();
         }
+        SortHand();
+        SortPlay();
     }
 
     [PunRPC]
@@ -473,6 +482,7 @@ public class Player : MonoBehaviour
     {
         Log.instance.AddText($"");
         Log.instance.AddText($"Turn {turnNumber} - {this.name}");
+        Manager.instance.instructions.text = $"Waiting for {this.name}";
         cardsPlayed.Clear();
 
         if (!PhotonNetwork.IsConnected || this.pv.IsMine)
@@ -492,19 +502,20 @@ public class Player : MonoBehaviour
                 Card eventToResolve = eventPopup.chosenCard;
                 Destroy(eventPopup.gameObject);
                 startOfTurnEvents.Remove(eventToResolve);
-                yield return eventToResolve.PlayInstructions(this, 0);
+
+                Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"{this.name} resolves {eventToResolve.name}.", 0 });
+                yield return eventToResolve.PlayInstructions(this, 1);
             }
 
             //choosing actions
             Card actionToUse = null;
             if (Manager.instance.ActiveEvent("Repairs"))
             {
-                actionToUse = Manager.instance.listOfEvents.Find(card => card.dataFile.cardName == "Upgrade");
+                actionToUse = Manager.instance.listOfEvents.Find(card => card.dataFile.cardName.Equals("Upgrade"));
             }
             else
             {
                 Popup actionPopup = Instantiate(CarryVariables.instance.cardPopup);
-                actionPopup.transform.SetParent(this.transform);
                 actionPopup.StatsSetup("Actions", Vector3.zero);
                 Manager.instance.instructions.text = "Choose an action.";
 
@@ -520,8 +531,10 @@ public class Player : MonoBehaviour
             yield return actionToUse.PlayInstructions(this, 0);
 
             //playing new card
+            Log.instance.MultiFunction(nameof(Log.instance.AddText), RpcTarget.All, new object[2] { $"", 0 });
             int currentCards = cardsPlayed.Count;
             Manager.instance.instructions.text = "Play a new card (or add a Junk).";
+
             yield return ChooseCardToPlay(listOfHand.Where(card => card.dataFile.coinCost <= coins).ToList(), new(), 0);
             if (currentCards == cardsPlayed.Count)
                 CreateJunkRPC(true, 0);
@@ -599,7 +612,7 @@ public class Player : MonoBehaviour
 
     void ReceiveChoice(int number)
     {
-        Debug.Log(number);
+        //Debug.Log(number);
         choice = number;
     }
 
