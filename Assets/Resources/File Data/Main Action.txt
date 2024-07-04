@@ -13,7 +13,6 @@
       "numPlayCost",
       "numMisc",
       "eventTimes",
-      "artCredit",
       "isDirector"
     ],
     [
@@ -25,7 +24,6 @@
       "DrawCards",
       "",
       "2",
-      "",
       "",
       "",
       "",
@@ -47,7 +45,6 @@
       "",
       "",
       "",
-      "",
       "FALSE"
     ],
     [
@@ -62,7 +59,6 @@
       "",
       "",
       "0",
-      "",
       "",
       "",
       "FALSE"

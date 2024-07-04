@@ -23,7 +23,6 @@ public class Card : MonoBehaviour
     [Foldout("Art", true)]
         [ReadOnly] public CanvasGroup cg;
         public Image background;
-        [ReadOnly] public Sprite originalSprite;
         public Image border;
 
     [Foldout("Methods", true)]
@@ -77,7 +76,6 @@ public class Card : MonoBehaviour
         this.dataFile = DownloadSheets.instance.mainActionData[fileSlot];
         this.transform.SetParent(Manager.instance.actions);
         Manager.instance.listOfActions.Add(this);
-        this.originalSprite = Resources.Load<Sprite>($"Action/{this.dataFile.cardName}");
         OtherSetup();
     }
 
@@ -88,7 +86,6 @@ public class Card : MonoBehaviour
         this.transform.SetParent(Manager.instance.events);
         this.transform.localPosition = new Vector3(-800 + 250 * slot, 525);
         Manager.instance.listOfEvents.Add(this);
-        this.originalSprite = Resources.Load<Sprite>($"Event/{this.dataFile.cardName}");
         Log.instance.AddText($"Using {this.dataFile.cardName}.");
         OtherSetup();
     }
@@ -98,7 +95,6 @@ public class Card : MonoBehaviour
     {
         this.dataFile = DownloadSheets.instance.robotData[fileSlot];
         this.transform.SetParent(Manager.instance.deck);
-        this.originalSprite = Resources.Load<Sprite>($"Robot/{this.dataFile.cardName}");
         if (dataFile.isDirector)
             background.color = Color.black;
         OtherSetup();
@@ -107,7 +103,7 @@ public class Card : MonoBehaviour
     void OtherSetup()
     {
         this.name = dataFile.cardName;
-        this.gameObject.GetComponent<CardLayout>().FillInCards(this.dataFile, this.originalSprite, background.color);
+        this.gameObject.GetComponent<CardLayout>().FillInCards(this.dataFile, background.color);
 
         GetMethods(dataFile.playInstructions);
         GetMethods(dataFile.replaceInstructions);

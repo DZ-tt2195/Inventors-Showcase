@@ -23,7 +23,6 @@ public class CardData
     public int numPlayCost;
     public int numMisc;
     public bool isDirector;
-    public string artCredit;
     public PlayerTarget[] whoToTarget;
     public List<int> eventTimes;
 }
@@ -160,7 +159,6 @@ public class DownloadSheets : MonoBehaviour
             nextData.numMisc = StringToInt(data[i][cardSheetsColumns[nameof(CardData.numMisc)]]);
 
             nextData.isDirector = data[i][cardSheetsColumns[nameof(CardData.isDirector)]] == "TRUE";
-            nextData.artCredit = data[i][cardSheetsColumns[nameof(CardData.artCredit)]];
 
             string[] listOfTargets = (data[i][cardSheetsColumns[nameof(CardData.whoToTarget)]].Equals("") ? new string[1] { "None" } :
                 SpliceString(data[i][cardSheetsColumns[nameof(CardData.whoToTarget)]].Trim().ToUpper(), '-'));

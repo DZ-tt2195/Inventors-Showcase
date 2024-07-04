@@ -13,10 +13,8 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
     [SerializeField] Image background;
     TMP_Text titleText;
     TMP_Text descriptionText;
-    TMP_Text artText;
     TMP_Text coinText;
     TMP_Text crownText;
-    Image artBox;
     List<CanvasGroup> listOfClocks = new(); 
 
     private void Awake()
@@ -24,8 +22,6 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
         cg = transform.Find("Canvas Group").GetComponent<CanvasGroup>();
         titleText = cg.transform.Find("Title").GetComponent<TMP_Text>();
         descriptionText = cg.transform.Find("Description").GetComponent<TMP_Text>();
-        artBox = cg.transform.Find("Art Box").GetComponent<Image>();
-        artText = cg.transform.Find("Art Credit").GetComponent<TMP_Text>();
 
         try
         {
@@ -57,7 +53,7 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    public void FillInCards(CardData dataFile, Sprite sprite, Color color)
+    public void FillInCards(CardData dataFile, Color color)
     {
         this.dataFile = dataFile;
 
@@ -72,10 +68,6 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
         titleText.text = dataFile.cardName;
         descriptionText.text = dataFile.textBox;
         descriptionText.text = KeywordTooltip.instance.EditText(descriptionText.text);
-
-        artText.text = dataFile.artCredit;
-        artBox.sprite = sprite;
-        artBox.color = Color.red;
 
         if (coinText != null)
         {
@@ -118,6 +110,6 @@ public class CardLayout : MonoBehaviour, IPointerClickHandler
 
     void RightClickInfo()
     {
-        CarryVariables.instance.RightClickDisplay(cg.alpha, (artBox != null) ? artBox.sprite : null, this.dataFile, background.color);
+        CarryVariables.instance.RightClickDisplay(cg.alpha, this.dataFile, background.color);
     }
 }
