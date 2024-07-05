@@ -341,7 +341,6 @@ public class Player : MonoBehaviour
             else
                 AddToPlayArea(cardToPlay, logged);
 
-            MultiFunction(nameof(LoseCoin), RpcTarget.All, new object[2] { cardToPlay.dataFile.coinCost, logged });
             yield return new WaitForSeconds(0.25f);
             if (cardToDiscard != null)
                 yield return cardToDiscard.ReplaceInstructions(this, logged + 1);

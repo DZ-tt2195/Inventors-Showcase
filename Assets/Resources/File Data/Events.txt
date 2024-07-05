@@ -158,6 +158,22 @@
       "",
       "1,2,3,4,5",
       "FALSE"
+    ],
+    [
+      "Tournament",
+      "START OF TURN: If you're the player with the most Card in hand (or tied), you may replace 1 Card.",
+      "",
+      "",
+      "You",
+      "MostInHand/ReplaceCardOrMore",
+      "",
+      "",
+      "",
+      "",
+      "0",
+      "",
+      "5,10",
+      "FALSE"
     ]
   ]
 }

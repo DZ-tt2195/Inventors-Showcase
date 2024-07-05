@@ -417,30 +417,44 @@ public class Card : MonoBehaviour
 
     IEnumerator MandatoryDiscard(Player player, int logged)
     {
-        for (int i = 0; i<dataFile.numDraw; i++)
+        if (player.listOfHand.Count <= dataFile.numDraw)
         {
-            Manager.instance.instructions.text = $"Discard a card ({dataFile.numDraw-i} more).";
-            yield return player.ChooseCard(player.listOfHand, false);
-            player.DiscardRPC(player.chosenCard, logged);
+            yield return DiscardHand(player, logged);
+        }
+        else
+        {
+            for (int i = 0; i < dataFile.numDraw; i++)
+            {
+                Manager.instance.instructions.text = $"Discard a card ({dataFile.numDraw - i} more).";
+                yield return player.ChooseCard(player.listOfHand, false);
+                player.DiscardRPC(player.chosenCard, logged);
+            }
         }
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     IEnumerator OptionalDiscard(Player player, int logged)
     {
-        for (int i = 0; i < dataFile.numDraw; i++)
+        if (player.listOfHand.Count < dataFile.numDraw)
         {
-            Manager.instance.instructions.text = $"Discard a card ({dataFile.numDraw - i} more)?";
-            yield return player.ChooseCard(player.listOfHand, i == 0);
+            MultiFunction(nameof(StopInstructions), RpcTarget.All);
+        }
+        else
+        {
+            for (int i = 0; i < dataFile.numDraw; i++)
+            {
+                Manager.instance.instructions.text = $"Discard a card ({dataFile.numDraw - i} more)?";
+                yield return player.ChooseCard(player.listOfHand, i == 0);
 
-            if (player.chosenCard == null)
-            {
-                MultiFunction(nameof(StopInstructions), RpcTarget.All);
-                break;
-            }
-            else
-            {
-                player.DiscardRPC(player.chosenCard, logged);
+                if (player.chosenCard == null)
+                {
+                    MultiFunction(nameof(StopInstructions), RpcTarget.All);
+                    break;
+                }
+                else
+                {
+                    player.DiscardRPC(player.chosenCard, logged);
+                }
             }
         }
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
@@ -568,12 +582,22 @@ public class Card : MonoBehaviour
         yield return popup.WaitForChoice();
         if (popup.chosenButton == 1)
             MultiFunction(nameof(StopInstructions), RpcTarget.All);
+        Destroy(popup.gameObject);
+        MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
+    }
+
+    IEnumerator MostInHand(Player player, int logged)
+    {
+        yield return null;
+        List<Player> listOfPlayers = Manager.instance.playersInOrder.OrderByDescending(player => player.listOfHand.Count).ToList();
+        if (listOfPlayers[0].listOfHand.Count > player.listOfHand.Count)
+            MultiFunction(nameof(StopInstructions), RpcTarget.All);
         MultiFunction(nameof(FinishedInstructions), RpcTarget.All);
     }
 
     #endregion
 
-#region Setters
+    #region Setters
 
     [PunRPC]
     void SetAllStats(int number)

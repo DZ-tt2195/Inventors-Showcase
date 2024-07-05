@@ -202,7 +202,6 @@ MonoBehaviour:
     numPlayCost: 0
     numMisc: 0
     isDirector: 0
-    artCredit: 
     whoToTarget: 
     eventTimes: 
   button: {fileID: 0}
