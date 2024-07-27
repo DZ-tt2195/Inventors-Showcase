@@ -458,7 +458,7 @@ public class Player : MonoBehaviour
 
     public int CalculateScore()
     {
-        int score = negCrowns;
+        int score = -1*negCrowns;
         foreach (Card card in listOfPlay)
             score += card.dataFile.scoringCrowns;
         return score;
