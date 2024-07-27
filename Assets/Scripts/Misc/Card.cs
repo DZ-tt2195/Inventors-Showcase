@@ -253,11 +253,13 @@ public class Card : MonoBehaviour
                     runNextMethod = true;
 
                     if (dataFile.whoToTarget[i] == PlayerTarget.Others && player == nextPlayer)
-                        continue;
-
-                    foreach (string methodName in listOfSmallInstructions)
-                        yield return RunStep(methodName, nextPlayer, logged);
-
+                    {
+                    }
+                    else
+                    {
+                        foreach (string methodName in listOfSmallInstructions)
+                            yield return RunStep(methodName, nextPlayer, logged);
+                    }
                     playerTracker = (playerTracker == Manager.instance.playersInOrder.Count - 1) ? 0 : playerTracker + 1;
                 }
             }
@@ -597,7 +599,7 @@ public class Card : MonoBehaviour
 
     #endregion
 
-    #region Setters
+#region Setters
 
     [PunRPC]
     void SetAllStats(int number)

@@ -103,7 +103,6 @@ public class Player : MonoBehaviour
     internal void AssignInfo(int position)
     {
         this.playerPosition = position;
-        resignButton.onClick.AddListener(ResignTime);
         storePlayers = GameObject.Find("Store Players").transform;
         this.transform.SetParent(storePlayers);
         this.transform.localPosition = new Vector3(2500 * this.playerPosition, 0, 0);
@@ -118,6 +117,7 @@ public class Player : MonoBehaviour
         {
             CreateJunkRPC(true, -1);
             CreateJunkRPC(true, -1);
+            resignButton.onClick.AddListener(ResignTime);
             MoveScreen();
         }
     }
@@ -171,7 +171,7 @@ public class Player : MonoBehaviour
         if (Manager.instance.ActiveEvent("Recycling"))
             GainCoin(1, logged);
 
-        if (PhotonNetwork.IsConnected && discardMe.pv.AmOwner)
+        if (PhotonNetwork.IsConnected && discardMe.pv.AmOwner && discardMe.name.Equals("Junk"))
             StartCoroutine(DeleteJunk(discardMe.pv));
     }
 
@@ -555,10 +555,10 @@ public class Player : MonoBehaviour
     {
         choice = -10;
         chosenCard = null;
+        Popup popup = null;
 
         if (possibleCards.Count > 0)
         {
-            Popup popup = null;
 
             if (optional)
             {
@@ -593,19 +593,19 @@ public class Player : MonoBehaviour
                         break;
                 }
             }
+        }
 
-            if (popup != null)
-                Destroy(popup.gameObject);
+        if (popup != null)
+            Destroy(popup.gameObject);
 
-            chosenCard = (choice >= 0) ? possibleCards[choice] : null;
+        chosenCard = (choice >= 0) ? possibleCards[choice] : null;
 
-            for (int i = 0; i < possibleCards.Count; i++)
-            {
-                Card nextCard = possibleCards[i];
-                nextCard.button.onClick.RemoveAllListeners();
-                nextCard.button.interactable = false;
-                nextCard.border.gameObject.SetActive(false);
-            }
+        for (int i = 0; i < possibleCards.Count; i++)
+        {
+            Card nextCard = possibleCards[i];
+            nextCard.button.onClick.RemoveAllListeners();
+            nextCard.button.interactable = false;
+            nextCard.border.gameObject.SetActive(false);
         }
     }
 

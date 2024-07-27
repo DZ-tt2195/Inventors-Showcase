@@ -23,10 +23,15 @@ public class ServerAnalytics : MonoBehaviour
         datatext.text =
             $"Frames/Second: {CalculateFrames()}";
 
+        if (PhotonNetwork.IsConnected)
+        {
+            datatext.text +=
+                $"\nServer Ping: {PhotonNetwork.GetPing()}";
+        }
+
         if (PhotonNetwork.InRoom)
         {
             datatext.text +=
-                $"\nServer Ping: {PhotonNetwork.GetPing()}" +
                 $"\nRoom: {PhotonNetwork.CurrentRoom.Name}" +
                 $"\nHost: {PhotonNetwork.MasterClient.NickName}";
         }
